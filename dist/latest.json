@@ -1,22 +1,25 @@
 {
-  "version": "1.1.0",
-  "tag": "v1.1.0",
-  "notes": "Release",
-  "pub_date": "2026-11-12T01:29:49.746Z",
-  "url": "https://github.com/Tenkayro/Vylos/releases/download/v1.1.0/Vylos-Parent.msi",
-  "sha256": "1898448d5e5ba92fc8f5dfc9dd1be8654722c30444bf2c3c4fb6da2f43d9a869",
+  "version": "1.1.1",
+  "tag": "v1.1.1",
+  "notes": "Vylos Family Control v1.1.1 — Vylos-Parent.msi & Vylos-Child.msi",
+  "pub_date": "2026-11-12T01:37:06.977Z",
+  "url": "https://github.com/Tenkayro/Vylos/releases/download/v1.1.1/Vylos-Parent.msi",
+  "sha256": "e0c8621fcfb69fa42d657612d35c3e16c705720f8a0c727f3c32a9294cc74405",
   "platforms": {
     "windows-x86_64": {
-      "url": "https://github.com/Tenkayro/Vylos/releases/download/v1.1.0/Vylos-Parent.msi",
-      "sha256": "1898448d5e5ba92fc8f5dfc9dd1be8654722c30444bf2c3c4fb6da2f43d9a869"
+      "url": "https://github.com/Tenkayro/Vylos/releases/download/v1.1.1/Vylos-Parent.msi",
+      "sha256": "e0c8621fcfb69fa42d657612d35c3e16c705720f8a0c727f3c32a9294cc74405",
+      "size": 5386240
     },
     "windows-x86_64-parent": {
-      "url": "https://github.com/Tenkayro/Vylos/releases/download/v1.1.0/Vylos-Parent.msi",
-      "sha256": "1898448d5e5ba92fc8f5dfc9dd1be8654722c30444bf2c3c4fb6da2f43d9a869"
+      "url": "https://github.com/Tenkayro/Vylos/releases/download/v1.1.1/Vylos-Parent.msi",
+      "sha256": "e0c8621fcfb69fa42d657612d35c3e16c705720f8a0c727f3c32a9294cc74405",
+      "size": 5386240
     },
     "windows-x86_64-child": {
-      "url": "https://github.com/Tenkayro/Vylos/releases/download/v1.1.0/Vylos-Child.msi",
-      "sha256": "04a290c976c2ef77b7c09232f9501d6312eebc0b2e99a5848abe357b18e0acf8"
+      "url": "https://github.com/Tenkayro/Vylos/releases/download/v1.1.1/Vylos-Child.msi",
+      "sha256": "b8e4d22e33deac0324ba96d0294dc56a14ee4a2ba1bfc7b51d738487a1bbb6de",
+      "size": 5386240
     }
   }
 }

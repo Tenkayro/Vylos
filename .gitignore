@@ -21,6 +21,8 @@
 /out/
 /frontend/dist/
 /frontend/.vite/
+latest.json
+latest.yml
 
 # Node.js Dependencies & Logs
 node_modules/
