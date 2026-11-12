@@ -31,15 +31,14 @@ function syncWebsiteVersion() {
   const appJsPath = path.join(webDir, 'app.js');
   if (fs.existsSync(appJsPath)) {
     let js = fs.readFileSync(appJsPath, 'utf8');
-    js = js.replace(/const FALLBACK_VERSION = '[^']+';/, `const FALLBACK_VERSION = '${ver}';`);
+    js = js.replace(/let version = '[^']+';/, `let version = '${ver}';`);
     fs.writeFileSync(appJsPath, js, 'utf8');
   }
 
   const indexHtmlPath = path.join(webDir, 'index.html');
   if (fs.existsSync(indexHtmlPath)) {
     let html = fs.readFileSync(indexHtmlPath, 'utf8');
-    html = html.replace(/Release v\d+\.\d+\.\d+/g, `Release v${ver}`);
-    html = html.replace(/\(v\d+\.\d+\.\d+\)/g, `(v${ver})`);
+    html = html.replace(/v\d+\.\d+\.\d+ · Windows 10\/11/g, `v${ver} · Windows 10/11`);
     fs.writeFileSync(indexHtmlPath, html, 'utf8');
   }
 

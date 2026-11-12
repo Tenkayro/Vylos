@@ -171,53 +171,47 @@ const appBundleJS = `// Vylos Family Control Compiled Desktop UI Bundle (Svelte 
     let inner = '';
     if (state.wizardStep === 'role') {
       inner = \`
-        <div style="margin-bottom:14px; color:var(--text-secondary); font-size:12.5px;">
-          Choose how this Windows computer will operate in your home network:
-        </div>
-        <div class="grid-2" style="margin-bottom:16px;">
+        <div class="grid-2" style="margin-bottom:4px;">
           <button class="card" data-action="wizard-step" data-step="parent_form" style="text-align:left; cursor:pointer; background:var(--bg-elevated);">
             <div class="row-between" style="margin-bottom:6px;">
-              <span style="font-weight:600; color:var(--accent); font-size:13.5px;">Parent Mode</span>
-              \${badgeHTML('success', 'Coordinator')}
+              <span style="font-weight:600; color:var(--accent); font-size:13.5px;">Parent Edition</span>
+              \${badgeHTML('success', 'Dashboard')}
             </div>
             <p style="color:var(--text-secondary); font-size:12px;">
-              Install on the parent computer. Manage children, devices, screen time, applications, DNS protection, and security over LAN.
+              Manage children, screen time, apps, and DNS filters from this PC.
             </p>
           </button>
           <button class="card" data-action="wizard-step" data-step="child_form" style="text-align:left; cursor:pointer; background:var(--bg-elevated);">
             <div class="row-between" style="margin-bottom:6px;">
-              <span style="font-weight:600; color:var(--text-primary); font-size:13.5px;">Child Mode</span>
+              <span style="font-weight:600; color:var(--text-primary); font-size:13.5px;">Child Edition</span>
               \${badgeHTML('neutral', 'Agent')}
             </div>
             <p style="color:var(--text-secondary); font-size:12px;">
-              Install on your child's computer. Runs a lightweight background agent that enforces stored rules even when offline.
+              Enforces family rules on your child's PC in the background.
             </p>
           </button>
-        </div>
-        <div class="notice-box">
-          <span><strong>Privacy & Architecture Guarantee:</strong> No external servers, no accounts, no telemetry, and no covert surveillance.</span>
         </div>
       \`;
     } else if (state.wizardStep === 'parent_form') {
       inner = \`
-        <form id="parent-setup-form" style="display:flex; flex-direction:column; gap:11px;">
+        <form id="parent-setup-form" style="display:flex; flex-direction:column; gap:12px;">
           <div class="field-group">
-            <label class="field-label">Family / Household Name</label>
+            <label class="field-label">Family Name</label>
             <input class="input" name="familyName" value="Our Family" required />
           </div>
           <div class="grid-2">
             <div class="field-group">
-              <label class="field-label">First Child Profile Name</label>
+              <label class="field-label">First Child Name</label>
               <input class="input" name="firstChildName" value="Alex" />
             </div>
             <div class="field-group">
-              <label class="field-label">Parent Contact Note (shown on Child PC)</label>
-              <input class="input" name="parentContact" value="Ask Mom or Dad in the living room" />
+              <label class="field-label">Parent Contact Note</label>
+              <input class="input" name="parentContact" value="Ask Mom or Dad" />
             </div>
           </div>
           <div class="grid-2">
             <div class="field-group">
-              <label class="field-label">Parent Master Password (Argon2id)</label>
+              <label class="field-label">Parent Password</label>
               <input type="password" class="input" name="password" placeholder="Min. 8 characters" required />
             </div>
             <div class="field-group">
@@ -225,68 +219,61 @@ const appBundleJS = `// Vylos Family Control Compiled Desktop UI Bundle (Svelte 
               <input type="password" class="input" name="passwordConfirm" placeholder="Repeat password" required />
             </div>
           </div>
-          <div class="row-between" style="margin-top:8px;">
-            \${edition === 'unified' ? '<button type="button" class="btn" data-action="wizard-step" data-step="role">Back</button>' : '<span style="font-size:11.5px;color:var(--text-secondary);">Vylos Parent Edition (Vylos-Parent.msi)</span>'}
-            <button type="submit" class="btn btn-primary">Initialize Parent Dashboard</button>
+          <div class="row-between" style="margin-top:6px;">
+            \${edition === 'unified' ? '<button type="button" class="btn" data-action="wizard-step" data-step="role">Back</button>' : '<span style="font-size:11.5px;color:var(--text-secondary);">Parent Edition</span>'}
+            <button type="submit" class="btn btn-primary">Continue</button>
           </div>
         </form>
       \`;
     } else if (state.wizardStep === 'parent_recovery') {
       inner = \`
         <div style="display:flex; flex-direction:column; gap:12px;">
-          \${badgeHTML('warning', 'Save Your Emergency Recovery Key')}
+          \${badgeHTML('warning', 'Save Your Recovery Key')}
           <p style="color:var(--text-secondary); font-size:12.5px;">
-            Because Vylos operates strictly offline without cloud accounts, this one-time recovery key is the only way to reset a forgotten Parent password. Write it down and store it safely:
+            Keep this key in a safe place. It is the only way to reset a forgotten Parent password:
           </p>
           <div class="card mono" style="text-align:center; font-size:15px; font-weight:600; color:var(--accent); letter-spacing:0.06em; background:var(--bg-input);">
             \${esc(state.wizardRecoveryCode)}
           </div>
-          <div class="row-between" style="margin-top:6px;">
-            <span style="font-size:11.5px; color:var(--text-secondary);">Hashed locally with Argon2id</span>
-            <button class="btn btn-primary" data-action="finish-wizard">I Have Saved This Key — Open Dashboard</button>
+          <div style="text-align:right; margin-top:4px;">
+            <button class="btn btn-primary" data-action="finish-wizard">Open Dashboard</button>
           </div>
         </div>
       \`;
     } else if (state.wizardStep === 'child_form') {
       inner = \`
-        <form id="child-setup-form" style="display:flex; flex-direction:column; gap:11px;">
-          <div class="notice-box" style="margin-bottom:2px;">
-            <div>
-              <strong>Parent Configuration Required:</strong>
-              A parent must set up Child Mode on this computer. Set a local Parent Protection Password (so your child cannot disable rules or uninstall Vylos) and pair with the Parent PC.
-            </div>
-          </div>
+        <form id="child-setup-form" style="display:flex; flex-direction:column; gap:12px;">
           <div class="field-group">
-            <label class="field-label">This Child Computer's Name</label>
+            <label class="field-label">Child Computer Name</label>
             <input class="input" name="deviceName" value="\${esc(cfg.localDeviceName || 'Child-PC')}" required />
           </div>
           <div class="grid-2">
             <div class="field-group">
-              <label class="field-label">Parent Protection Password (Argon2id)</label>
-              <input type="password" class="input" name="parentPassword" placeholder="Min. 8 characters (Parent only)" required />
+              <label class="field-label">Parent Protection Password</label>
+              <input type="password" class="input" name="parentPassword" placeholder="Min. 8 characters" required />
             </div>
             <div class="field-group">
-              <label class="field-label">Confirm Parent Password</label>
-              <input type="password" class="input" name="parentPasswordConfirm" placeholder="Repeat parent password" required />
+              <label class="field-label">Confirm Password</label>
+              <input type="password" class="input" name="parentPasswordConfirm" placeholder="Repeat password" required />
             </div>
           </div>
           <div class="card" style="background:var(--bg-input);">
-            <div class="card-title" style="margin-bottom:6px;">Pair with Parent PC over LAN (Recommended)</div>
-            \${parentPeers.length > 0 ? '<div style="margin-bottom:8px; font-size:11.5px; color:var(--text-secondary);">Discovered Parent PC: ' + parentPeers.map(p => esc(p.deviceName + ' (' + p.ipAddress + ':' + p.tlsPort + ')')).join(', ') + '</div>' : ''}
+            <div class="card-title" style="margin-bottom:8px;">Pair with Parent PC (Optional)</div>
+            \${parentPeers.length > 0 ? '<div style="margin-bottom:8px; font-size:11.5px; color:var(--text-secondary);">Found on LAN: ' + parentPeers.map(p => esc(p.deviceName + ' (' + p.ipAddress + ':' + p.tlsPort + ')')).join(', ') + '</div>' : ''}
             <div class="grid-2">
               <div class="field-group">
                 <label class="field-label">Parent PC IP:Port</label>
-                <input class="input mono" name="parentEndpoint" placeholder="e.g. 192.168.1.10:41843" value="\${parentPeers[0] ? esc(parentPeers[0].ipAddress + ':' + parentPeers[0].tlsPort) : ''}" />
+                <input class="input mono" name="parentEndpoint" placeholder="192.168.1.10:41843" value="\${parentPeers[0] ? esc(parentPeers[0].ipAddress + ':' + parentPeers[0].tlsPort) : ''}" />
               </div>
               <div class="field-group">
-                <label class="field-label">One-Time Pairing Code</label>
+                <label class="field-label">Pairing Code</label>
                 <input class="input mono" name="pairingCode" placeholder="XXXX-XXXX" />
               </div>
             </div>
           </div>
           <div class="row-between" style="margin-top:6px;">
-            \${edition === 'unified' ? '<button type="button" class="btn" data-action="wizard-step" data-step="role">Back</button>' : '<span style="font-size:11.5px;color:var(--text-secondary);">Vylos Child Edition (Vylos-Child.msi) · Locked to Child Mode</span>'}
-            <button type="submit" class="btn btn-primary">Authorize & Activate Child Mode</button>
+            \${edition === 'unified' ? '<button type="button" class="btn" data-action="wizard-step" data-step="role">Back</button>' : '<span style="font-size:11.5px;color:var(--text-secondary);">Child Edition · Parent Setup</span>'}
+            <button type="submit" class="btn btn-primary">Activate Child Mode</button>
           </div>
         </form>
       \`;
@@ -294,12 +281,12 @@ const appBundleJS = `// Vylos Family Control Compiled Desktop UI Bundle (Svelte 
 
     return \`
       <div style="display:flex; align-items:center; justify-content:center; height:100vh; padding:20px; background:var(--bg-primary);">
-        <div class="card" style="width:100%; max-width:560px; padding:22px 24px;">
-          <div style="display:flex; align-items:center; gap:10px; margin-bottom:16px; padding-bottom:12px; border-bottom:1px solid var(--border-subtle);">
+        <div class="card" style="width:100%; max-width:480px; padding:24px;">
+          <div style="display:flex; align-items:center; gap:10px; margin-bottom:18px;">
             <div class="brand-mark">V</div>
             <div>
-              <div style="font-size:15px; font-weight:600;">Vylos Family Control — Unified Setup</div>
-              <div style="font-size:11.5px; color:var(--text-secondary);">Single Unified MSI Application · Choose Parent or Child Role · Local LAN TLS 1.3</div>
+              <div style="font-size:15px; font-weight:600;">Vylos Setup</div>
+              <div style="font-size:11.5px; color:var(--text-secondary);">Local Home Network Parental Control</div>
             </div>
           </div>
           \${inner}
@@ -315,32 +302,29 @@ const appBundleJS = `// Vylos Family Control Compiled Desktop UI Bundle (Svelte 
 
     return \`
       <div class="grid-4">
-        \${statCardHTML('Connected Children', ov.connectedChildrenCount, ov.onlineDevicesCount + ' of ' + ov.totalDevicesCount + ' paired PCs online')}
-        \${statCardHTML("Today's Computer Usage", formatMinutes(ov.todayTotalMinutes), ov.blockedAttemptsToday + ' restricted launches today')}
-        \${statCardHTML('Website & DNS Filter', 'Cloudflare 1.1.1.3', ov.blockedDomainsCount + ' blocked domain events', 'success')}
-        \${statCardHTML('Security & Integrity', ov.securityHealthy ? 'Protected' : 'Attention', 'TLS 1.3 + Certificate Pinning', ov.securityHealthy ? 'success' : 'warning')}
+        \${statCardHTML('Children', ov.connectedChildrenCount, ov.onlineDevicesCount + ' / ' + ov.totalDevicesCount + ' online')}
+        \${statCardHTML('Today', formatMinutes(ov.todayTotalMinutes), ov.blockedAttemptsToday + ' blocked attempts')}
+        \${statCardHTML('DNS Filter', '1.1.1.3', ov.blockedDomainsCount + ' blocked domains', 'success')}
+        \${statCardHTML('Status', ov.securityHealthy ? 'Protected' : 'Check', 'Local LAN', ov.securityHealthy ? 'success' : 'warning')}
       </div>
 
       <div class="grid-2">
         <div class="card">
           <div class="card-header">
-            <div>
-              <div class="card-title">Paired Child Devices & Screen Time</div>
-              <div class="card-subtitle">Direct LAN coordination — rules enforced locally when offline</div>
-            </div>
-            <button class="btn btn-sm" data-action="nav" data-section="devices">Manage Devices</button>
+            <div class="card-title">Paired Devices</div>
+            <button class="btn btn-sm" data-action="nav" data-section="devices">Manage</button>
           </div>
-          \${devs.length === 0 ? '<div class="empty-state">No child computers paired yet. Open <strong>Devices</strong> to generate a one-time LAN pairing code.</div>' : \`
+          \${devs.length === 0 ? '<div class="empty-state">No child PCs paired yet.</div>' : \`
             <table class="data-table">
-              <thead><tr><th>Device / Child</th><th>Status</th><th>Used / Remaining</th><th>Active App</th><th>Quick Action</th></tr></thead>
+              <thead><tr><th>Device</th><th>Status</th><th>Remaining</th><th>Active App</th><th></th></tr></thead>
               <tbody>
                 \${devs.map(d => \`
                   <tr>
-                    <td><div style="font-weight:600;">\${esc(d.name)}</div><div style="font-size:11px;color:var(--text-secondary);">\${esc(d.childName || 'Unassigned')} · \${esc(d.ipAddress || 'LAN')}</div></td>
+                    <td><div style="font-weight:600;">\${esc(d.name)}</div><div style="font-size:11px;color:var(--text-secondary);">\${esc(d.childName || 'Unassigned')}</div></td>
                     <td>\${badgeHTML(d.status === 'online' ? 'success' : 'neutral', d.status === 'online' ? 'Online' : 'Offline')}</td>
-                    <td>\${formatMinutes(d.usedTodayMinutes)} <span style="color:var(--text-secondary);">/ \${formatMinutes(d.remainingMinutes)} left</span></td>
+                    <td>\${formatMinutes(d.remainingMinutes)}</td>
                     <td style="color:var(--text-secondary);">\${esc(d.activeApp || 'Idle')}</td>
-                    <td><button class="btn btn-sm \${d.screenLocked ? 'btn-danger' : ''}" data-action="quick-lock" data-device="\${esc(d.id)}" data-lock="\${!d.screenLocked}">\${d.screenLocked ? 'Unlock PC' : 'Lock Screen'}</button></td>
+                    <td style="text-align:right;"><button class="btn btn-sm \${d.screenLocked ? 'btn-danger' : ''}" data-action="quick-lock" data-device="\${esc(d.id)}" data-lock="\${!d.screenLocked}">\${d.screenLocked ? 'Unlock' : 'Lock'}</button></td>
                   </tr>
                 \`).join('')}
               </tbody>
@@ -350,11 +334,8 @@ const appBundleJS = `// Vylos Family Control Compiled Desktop UI Bundle (Svelte 
 
         <div class="card">
           <div class="card-header">
-            <div>
-              <div class="card-title">Recently Active Applications</div>
-              <div class="card-subtitle">Today's foreground usage duration across monitored devices</div>
-            </div>
-            <button class="btn btn-sm" data-action="nav" data-section="applications">App Rules</button>
+            <div class="card-title">Active Apps Today</div>
+            <button class="btn btn-sm" data-action="nav" data-section="applications">Rules</button>
           </div>
           \${!ov.recentApps || ov.recentApps.length === 0 ? '<div class="empty-state">No application usage recorded yet today.</div>' : \`
             <table class="data-table">
@@ -376,13 +357,10 @@ const appBundleJS = `// Vylos Family Control Compiled Desktop UI Bundle (Svelte 
       <div class="grid-2">
         <div class="card">
           <div class="card-header">
-            <div>
-              <div class="card-title">Blocked Websites & Domain Filter History</div>
-              <div class="card-subtitle">Cloudflare Family DNS + Local Domain Blocklist</div>
-            </div>
-            <button class="btn btn-sm" data-action="nav" data-section="websites">Configure DNS</button>
+            <div class="card-title">Blocked Domains</div>
+            <button class="btn btn-sm" data-action="nav" data-section="websites">DNS</button>
           </div>
-          \${!ov.recentBlockedDomains || ov.recentBlockedDomains.length === 0 ? '<div class="empty-state">No blocked domain attempts recorded recently.</div>' : \`
+          \${!ov.recentBlockedDomains || ov.recentBlockedDomains.length === 0 ? '<div class="empty-state">No blocked domains today.</div>' : \`
             <table class="data-table">
               <thead><tr><th>Domain</th><th>Category</th><th>Time</th></tr></thead>
               <tbody>
@@ -400,11 +378,8 @@ const appBundleJS = `// Vylos Family Control Compiled Desktop UI Bundle (Svelte 
 
         <div class="card">
           <div class="card-header">
-            <div>
-              <div class="card-title">Important Security & System Notifications</div>
-              <div class="card-subtitle">Audit log of pairing, policy changes, and tamper checks</div>
-            </div>
-            <button class="btn btn-sm" data-action="nav" data-section="protection">Protection View</button>
+            <div class="card-title">Recent Activity</div>
+            <button class="btn btn-sm" data-action="nav" data-section="protection">Protection</button>
           </div>
           \${!ov.notifications || ov.notifications.length === 0 ? '<div class="empty-state">All security checks nominal.</div>' : \`
             <table class="data-table">
@@ -546,13 +521,10 @@ const appBundleJS = `// Vylos Family Control Compiled Desktop UI Bundle (Svelte 
     const events = (ab && ab.recentEvents) || [];
 
     return \`
-      <div class="notice-box">
-        <div><strong>Transparent Activity Monitoring:</strong> FamilyControl logs computer login/logout sessions and active application duration. It never performs keylogging, covert screen capture, microphone recording, or hidden surveillance.</div>
-      </div>
       <div class="grid-3">
-        \${statCardHTML('Screen Usage (' + daily.dateStr + ')', formatMinutes(daily.totalMinutes), daily.totalSeconds + ' seconds active')}
-        \${statCardHTML('Session Logins', daily.loginCount, 'Recorded Windows session starts')}
-        \${statCardHTML('Blocked Policy Attempts', daily.blockedAttempts, 'Restricted app launches prevented', daily.blockedAttempts > 0 ? 'warning' : 'default')}
+        \${statCardHTML('Screen Usage (' + daily.dateStr + ')', formatMinutes(daily.totalMinutes), daily.totalSeconds + 's active')}
+        \${statCardHTML('Session Logins', daily.loginCount, 'Windows sessions')}
+        \${statCardHTML('Blocked Attempts', daily.blockedAttempts, 'Restricted app launches', daily.blockedAttempts > 0 ? 'warning' : 'default')}
       </div>
       <div class="grid-2">
         <div class="card">
@@ -709,14 +681,12 @@ const appBundleJS = `// Vylos Family Control Compiled Desktop UI Bundle (Svelte 
     const installed = ab.installedApps || [];
 
     return \`
-      <div class="notice-box">
-        <span><strong>System Process Protection Guard:</strong> Critical Windows processes (<code class="mono">csrss.exe</code>, <code class="mono">svchost.exe</code>, <code class="mono">lsass.exe</code>, <code class="mono">explorer.exe</code>, <code class="mono">dwm.exe</code>) are permanently allowlisted and can never be terminated.</span>
-        <button class="btn btn-sm" data-action="rescan-apps">Rescan Installed Software</button>
-      </div>
-
       <div class="grid-2">
         <div class="card">
-          <div class="card-header"><div class="card-title">Add or Configure Application Rule</div></div>
+          <div class="card-header">
+            <div class="card-title">Add Application Rule</div>
+            <button class="btn btn-sm" data-action="rescan-apps">Rescan Apps</button>
+          </div>
           <form id="add-app-rule-form">
             <div class="grid-2" style="margin-bottom:10px;">
               <div class="field-group">
@@ -811,20 +781,18 @@ const appBundleJS = `// Vylos Family Control Compiled Desktop UI Bundle (Svelte 
     const events = wb.blockedEvents || [];
 
     return \`
-      <div class="notice-box">
-        <span><strong>Technical Transparency Note:</strong> \${esc(pol.transparencyNote)}</span>
-        <button class="btn btn-sm" data-action="enforce-dns">Apply DNS & Hosts Now</button>
-      </div>
-
       <div class="grid-4">
-        \${statCardHTML('Cloudflare Family IPv4', pol.primaryIpv4 + ' / ' + pol.secondaryIpv4, 'Primary & Secondary DNS', pol.dnsMode === 'cloudflare_family' ? 'success' : 'default')}
-        \${statCardHTML('Cloudflare Family IPv6', '2606:4700:4700::1113', 'Secondary: 2606:4700:4700::1003', pol.dnsMode === 'cloudflare_family' ? 'success' : 'default')}
-        \${statCardHTML('Malware & Adult Filter', pol.blockAdult ? 'Malware + Adult' : pol.blockMalware ? 'Malware Only' : 'Off', 'Network resolver filter', pol.blockMalware ? 'success' : 'warning')}
-        \${statCardHTML('Custom Domain Rules', pol.blocklist.length + ' Blocked', pol.allowlist.length + ' allowlisted domains')}
+        \${statCardHTML('Primary IPv4', pol.primaryIpv4 + ' / ' + pol.secondaryIpv4, 'Cloudflare DNS', pol.dnsMode === 'cloudflare_family' ? 'success' : 'default')}
+        \${statCardHTML('Primary IPv6', '2606:4700:4700::1113', 'IPv6 Resolver', pol.dnsMode === 'cloudflare_family' ? 'success' : 'default')}
+        \${statCardHTML('Filter Mode', pol.blockAdult ? 'Malware + Adult' : pol.blockMalware ? 'Malware Only' : 'Off', 'Network DNS Filter', pol.blockMalware ? 'success' : 'warning')}
+        \${statCardHTML('Custom Domains', pol.blocklist.length + ' Blocked', pol.allowlist.length + ' Allowed')}
       </div>
 
       <div class="card">
-        <div class="card-header"><div class="card-title">Cloudflare 1.1.1.1 for Families DNS Configuration</div></div>
+        <div class="card-header">
+          <div class="card-title">Family DNS Filter</div>
+          <button class="btn btn-sm" data-action="enforce-dns">Apply DNS Now</button>
+        </div>
         <div class="grid-3">
           <button class="card" data-action="set-dns-mode" data-mode="cloudflare_family" style="text-align:left;cursor:pointer;border-color:\${pol.dnsMode === 'cloudflare_family' ? 'var(--accent)' : 'var(--border-subtle)'};">
             <div class="row-between" style="margin-bottom:4px;"><span style="font-weight:600;">Malware + Adult Content</span>\${badgeHTML('success', '1.1.1.3')}</div>
@@ -1019,24 +987,20 @@ const appBundleJS = `// Vylos Family Control Compiled Desktop UI Bundle (Svelte 
 
       <div class="card">
         <div class="card-header">
-          <div>
-            <div class="card-title">Vylos Automatic Updater (GitHub Release MSI)</div>
-            <div class="card-subtitle">Checks https://github.com/Tenkayro/Vylos/releases/latest/download/latest.json for verified MSI updates</div>
-          </div>
+          <div class="card-title">Updates</div>
           <div class="row-inline">
             <button class="btn btn-sm" data-action="check-updates">\${state.checkingUpdate ? 'Checking...' : 'Check for Updates'}</button>
-            \${state.updateInfo && state.updateInfo.updateAvailable ? '<button class="btn btn-sm btn-primary" data-action="install-update">' + (state.installingUpdate ? 'Downloading MSI...' : 'Update to v' + esc(state.updateInfo.latestVersion)) + '</button>' : ''}
+            \${state.updateInfo && state.updateInfo.updateAvailable ? '<button class="btn btn-sm btn-primary" data-action="install-update">' + (state.installingUpdate ? 'Updating...' : 'Install v' + esc(state.updateInfo.latestVersion)) + '</button>' : ''}
           </div>
         </div>
         \${state.updateInfo ? \`
           <div class="row-between" style="font-size:12px;">
             <div>
-              Current: <span class="mono">\${esc(state.updateInfo.currentVersion)}</span> · Latest: <span class="mono">\${esc(state.updateInfo.latestVersion)}</span>
-              \${state.updateInfo.notes ? '<div style="color:var(--text-secondary);margin-top:4px;">' + esc(state.updateInfo.notes) + '</div>' : ''}
+              Installed: <span class="mono">v\${esc(state.updateInfo.currentVersion)}</span> · Latest: <span class="mono">v\${esc(state.updateInfo.latestVersion)}</span>
             </div>
             \${badgeHTML(state.updateInfo.updateAvailable ? 'warning' : 'success', state.updateInfo.updateAvailable ? 'Update Available' : 'Up to Date')}
           </div>
-        \` : '<div style="font-size:11.5px;color:var(--text-secondary);">Click "Check for Updates" to query the latest release manifest and automatically install a newer MSI build.</div>'}
+        \` : '<div style="font-size:12px;color:var(--text-secondary);">Check for the latest Vylos release.</div>'}
       </div>
     \`;
   }
@@ -1143,7 +1107,7 @@ const appBundleJS = `// Vylos Family Control Compiled Desktop UI Bundle (Svelte 
             <div class="brand-mark">V</div>
             <div>
               <div class="brand-title">Vylos</div>
-              <div class="brand-subtitle">Family Control · \${esc(cfg.familyName)}</div>
+              <div class="brand-subtitle">\${esc(cfg.familyName)}</div>
             </div>
           </div>
           <nav class="nav-list">
@@ -1156,8 +1120,8 @@ const appBundleJS = `// Vylos Family Control Compiled Desktop UI Bundle (Svelte 
           </nav>
           <div class="sidebar-footer">
             <div class="row-between" style="font-size:11.5px; color:var(--text-secondary); padding:0 4px;">
-              <span>LAN TLS 1.3</span>
-              \${badgeHTML('success', 'Port ' + cfg.listenPort)}
+              <span>Local Network</span>
+              \${badgeHTML('success', 'Online')}
             </div>
           </div>
         </aside>
@@ -1165,14 +1129,12 @@ const appBundleJS = `// Vylos Family Control Compiled Desktop UI Bundle (Svelte 
           <header class="topbar">
             <div class="topbar-title-group">
               <h1 class="topbar-title">\${esc(currentLabel)}</h1>
-              \${badgeHTML('neutral', 'Local Network Only')}
             </div>
             <div class="topbar-controls">
               <div class="row-inline">
-                <label style="font-size:11.5px; color:var(--text-secondary);">Target Device:</label>
-                <select id="device-picker" class="select" style="width:210px; padding:4px 8px;">
-                  <option value="\${esc(cfg.localDeviceId)}" \${state.selectedDeviceId === cfg.localDeviceId ? 'selected' : ''}>This PC (\${esc(cfg.localDeviceName)})</option>
-                  \${devs.map(d => '<option value="' + esc(d.id) + '" ' + (state.selectedDeviceId === d.id ? 'selected' : '') + '>' + esc(d.name) + ' — ' + d.status.toUpperCase() + '</option>').join('')}
+                <select id="device-picker" class="select" style="width:190px; padding:5px 9px;">
+                  <option value="\${esc(cfg.localDeviceId)}" \${state.selectedDeviceId === cfg.localDeviceId ? 'selected' : ''}>\${esc(cfg.localDeviceName)}</option>
+                  \${devs.map(d => '<option value="' + esc(d.id) + '" ' + (state.selectedDeviceId === d.id ? 'selected' : '') + '>' + esc(d.name) + '</option>').join('')}
                 </select>
               </div>
               <button class="btn btn-sm" data-action="refresh">Refresh</button>
