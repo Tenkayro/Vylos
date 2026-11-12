@@ -16,6 +16,8 @@
     "build:backend": "go build -ldflags=\"-s -w\" -o Vylos.exe .",
     "build:msi": "node scripts/build-msi.mjs",
     "release": "node scripts/release.mjs",
+    "web": "node scripts/web.mjs",
+    "web:preview": "node scripts/web.mjs --preview",
     "test": "node scripts/test.mjs",
     "test:frontend": "node --test frontend/scripts/test.mjs",
     "test:go": "go test -v ./..."

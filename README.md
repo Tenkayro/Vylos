@@ -1,78 +1,102 @@
+<div align="center">
+
 # Vylos Family Control
 
-**Complete Open-Source Local Parental Control Application for Windows 10 & Windows 11**
+**Modern, 100% Local Open-Source Parental Control for Windows 10 & Windows 11**  
+*Zero Cloud · No Subscriptions · No Online Accounts · No Covert Surveillance*
 
-**Vylos Family Control** (`Vylos`) is a modern, lightweight, privacy-respecting parental control desktop application and background Windows service that operates **100% within your local home network (LAN)**.
+[![Website](https://img.shields.io/badge/Website-vylos.tenkayro.de-DCE9FF?style=for-the-badge)](https://vylos.tenkayro.de)
+[![Download Parent Edition](https://img.shields.io/badge/Download-Parent_Edition_(.msi)-59C99A?style=for-the-badge)](https://github.com/Tenkayro/Vylos/releases/latest/download/Vylos-Parent.msi)
+[![Download Child Edition](https://img.shields.io/badge/Download-Child_Edition_(.msi)-E5B96B?style=for-the-badge)](https://github.com/Tenkayro/Vylos/releases/latest/download/Vylos-Child.msi)
+[![License: MIT](https://img.shields.io/badge/License-MIT-273344?style=for-the-badge)](LICENSE)
 
-- **Zero Cloud Infrastructure:** No external servers, no mandatory accounts, no subscriptions, and no third-party telemetry.
-- **Single Unified MSI Installer (`dist/Vylos-Setup.msi`):** One installer and one executable (`Vylos.exe`) is used on both Parent and Child computers. In the Initial Setup Wizard, choose **Parent Mode** (coordination dashboard) or **Child Mode** (parent-authorized background agent).
-- **Parent-Authorized Child Setup:** When setting up Child Mode on a child's computer, a parent must authorize the installation with a local Argon2id Parent Protection Password and pair it with the Parent PC.
-- **Built-in Automatic Updater:** Checks `https://github.com/Tenkayro/Vylos/releases/latest/download/latest.json` (`latest.json` & `latest.yml`), verifies SHA-256 integrity, and installs signed MSI updates automatically.
-- **Offline-Resilient Enforcement:** Child computers store policies locally in SQLite and continue enforcing screen time, bedtime, application rules, and DNS/website rules even when the Parent computer is powered off.
-
----
-
-## 1. Quick Start & Root `npm run` Commands
-
-Run all commands directly in the main project folder (`C:\Daten\Dev\Go\FamilyControl`):
-
-```powershell
-# Build & start Vylos Family Control immediately for testing
-npm run start
-
-# Start in development mode on port 41800
-npm run dev
-
-# Build frontend, Vylos.exe, and unified MSI installer (dist/Vylos-Setup.msi)
-npm run build
-
-# Build only the Windows MSI package (dist/Vylos-Setup.msi)
-npm run build:msi
-
-# Run all Frontend + Go Backend & TLS 1.3 LAN Integration Tests
-npm test
-
-# Interactive @clack/prompts Release Menu -> Bump Version, Build MSI + latest.json/latest.yml, Upload to GitHub Releases
-npm run release
-```
+</div>
 
 ---
 
-## 2. Installation via Unified MSI (`dist/Vylos-Setup.msi`)
+## What is Vylos Family Control?
 
-1. Run `dist\Vylos-Setup.msi` on the Parent PC and on each Child PC.
-2. The MSI installs `Vylos.exe` into `C:\Program Files\Vylos`, creates Start Menu and Desktop shortcuts for **Vylos Family Control**, and registers `VylosService` (`Vylos Family Control Service`).
-3. Alternatively, run `.\installer\install.ps1` as Administrator to also configure LocalSubnet-scoped Windows Firewall rules (`TCP 41843` and `UDP 41880`).
+**Vylos Family Control** gives parents a clean, reliable way to manage screen time, bedtime schedules, games, and website filtering on their children’s Windows computers — **entirely inside your own home network (Wi-Fi / LAN)**.
 
----
-
-## 3. Configuring Parent Mode & Child Mode
-
-### Parent Computer
-1. Launch **Vylos Family Control** on the parent computer.
-2. In the **Unified Setup Wizard**, select **Parent Mode (Coordinator)**.
-3. Enter your **Family Name**, your first child's name, a **Parent Contact Note**, and a **Parent Master Password** (hashed locally with **Argon2id**).
-4. **Save your Emergency Recovery Key** (`FC-XXXX-XXXX-XXXX-XXXX`).
-
-### Child Computer (Parent Setup Required)
-1. On the Parent PC, open **Devices** in the sidebar and click **Generate One-Time Pairing Code**.
-2. Install `Vylos-Setup.msi` on the child's computer and open **Vylos Family Control**.
-3. Select **Child Mode (Agent)** in the Setup Wizard.
-4. **A parent must complete this step:** Set the local **Parent Protection Password** (so the child cannot change rules or uninstall Vylos) and enter the **One-Time Pairing Code** (`XXXX-XXXX`) along with the discovered Parent PC endpoint.
+Unlike commercial parental control suites, Vylos never uploads your family’s activity to external servers, never requires a monthly subscription or online account, and never spies on your children with keyloggers or secret screenshots.
 
 ---
 
-## 4. Releasing & Auto-Updating (`npm run release`)
+## Download Vylos for Windows 10 & 11
 
-Running `npm run release` opens an interactive `@clack/prompts` CLI menu:
-1. Select version bump (`Patch`, `Minor`, `Major`, or `Custom`).
-2. Automatically updates version numbers in `package.json`, `frontend/package.json`, `wails.json`, and `installer/Vylos.wxs`.
-3. Builds both Windows architectures (`dist/Vylos-windows-amd64.exe`, `dist/Vylos-windows-arm64.exe`) and packages the unified Windows installer `dist/Vylos-Setup.msi`.
-4. Generates `dist/latest.json` and `dist/latest.yml` with SHA-256 / SHA-512 checksums for the integrated Vylos Auto-Updater.
-5. Creates a Git tag and publishes the release assets to `https://github.com/Tenkayro/Vylos/releases`.
+Vylos provides **two dedicated Windows installers (`.msi`)** so each computer only runs the role it needs:
+
+| Edition | Who installs it? | Direct Download | What it does |
+|---|---|---|---|
+| **Vylos Parent Edition** | Install on the **Parent PC** | [**Download `Vylos-Parent.msi`**](https://github.com/Tenkayro/Vylos/releases/latest/download/Vylos-Parent.msi) | Full Parent Dashboard to manage children, pair devices, set screen-time schedules, block apps, and configure Family DNS. *(Automatically blocked from installing on protected Child PCs).* |
+| **Vylos Child Edition** | Install on each **Child PC** *(set up by a parent)* | [**Download `Vylos-Child.msi`**](https://github.com/Tenkayro/Vylos/releases/latest/download/Vylos-Child.msi) | Lightweight background agent & Windows Service (`VylosService`) that enforces family rules even when offline and shows remaining screen time in the System Tray. |
+
+> **Prefer downloading via our website?** Visit **[vylos.tenkayro.de](https://vylos.tenkayro.de)** to compare editions and preview the dashboard interactively.
 
 ---
 
-## License
+## How to Set Up Vylos in 3 Minutes
 
-Released under the [MIT License](LICENSE).
+### Step 1 — Set up the Parent Computer (`Vylos-Parent.msi`)
+1. Download and install **[`Vylos-Parent.msi`](https://github.com/Tenkayro/Vylos/releases/latest/download/Vylos-Parent.msi)** on your computer.
+2. Open **Vylos Family Control**, enter your **Family Name**, your child’s name, and create your **Parent Master Password**.
+3. Write down your **Emergency Recovery Key** (`FC-XXXX-XXXX-XXXX-XXXX`) shown on screen — because Vylos has no cloud server, this key is your offline backup if you ever forget your password.
+4. Open the **Devices** tab and click **Generate One-Time Pairing Code**.
+
+### Step 2 — Set up the Child Computer (`Vylos-Child.msi`)
+1. Download and run **[`Vylos-Child.msi`](https://github.com/Tenkayro/Vylos/releases/latest/download/Vylos-Child.msi)** on your child’s Windows PC.
+2. **Complete the Parent Setup step:** Set a local **Parent Protection Password** so your child cannot alter rules or uninstall Vylos.
+3. Select your automatically discovered **Parent PC** on the local network (or enter its IP address) and type in the **8-character One-Time Pairing Code** (`XXXX-XXXX`).
+
+### Step 3 — Manage Everything from Your Dashboard
+- Both computers connect directly over your home network using **TLS 1.3 with certificate pinning**.
+- Every rule you configure on the Parent PC is synced to the Child PC and stored locally — **rules continue to work even when the Parent PC is turned off**.
+
+---
+
+## Key Features for Parents
+
+### 1. Screen Time & Bedtime Schedules
+- **Daily Usage Limits:** Set separate daily screen-time allowances for school days (Monday–Friday) and weekends (Saturday–Sunday).
+- **Allowed Time Windows & Bedtime:** Define exact hours when the computer can be used each day and lock the workstation automatically at bedtime.
+- **Break Reminders:** Encourage healthy habits with automatic rest break notifications.
+- **Instant Bonus Time & Remote Lock:** Grant `+15m` or `+30m` of extra time with one click, pause usage, or lock the screen immediately from your Parent Dashboard.
+
+### 2. Application & Game Control
+- **Automatic Software Discovery:** View all installed applications and games on your child’s PC and spot newly installed software immediately.
+- **Block or Schedule Apps:** Block specific games/programs completely or restrict them to specific afternoon hours and daily time limits.
+- **Safe by Design:** Critical Windows system processes (`explorer.exe`, `svchost.exe`, `csrss.exe`, etc.) are permanently protected so your child’s operating system always stays stable.
+
+### 3. Family DNS & Website Filtering
+- **One-Click Cloudflare Family DNS (`1.1.1.3`):** Filter malware, phishing, and adult content across the entire computer using Cloudflare *1.1.1.1 for Families* (IPv4 & IPv6).
+- **Custom Allowlist & Blocklist:** Block specific distracting domains (e.g., `tiktok.com`) or explicitly allow educational sites.
+
+### 4. Transparent Protection — Never Spyware
+- Children can see their **remaining screen time**, **bedtime schedule**, **active family rules**, and a **Parent Contact Note** at any time via the Vylos System Tray icon.
+- **Strict Ethical Boundary:** Vylos **never** records keystrokes, **never** takes secret screenshots, and **never** accesses webcams or microphones.
+
+### 5. Multi-Layered Tamper Protection
+- **Edition Lock:** `Vylos-Child.msi` is compiled exclusively for Child Mode.
+- **Parent-Installer Block:** Once `Vylos-Child.msi` is active on a child’s computer, Windows Installer, database guards, and process rules automatically block the child from installing or launching `Vylos-Parent.msi` to bypass restrictions.
+- **Hardened Windows Service:** `VylosService` runs automatically in the background and requires the **Parent Password** before it can be uninstalled.
+- **Automatic Updates:** Built-in updater checks GitHub Releases, verifies SHA-256 integrity, and keeps both Parent and Child installations up to date.
+
+---
+
+## Frequently Asked Questions (FAQ)
+
+**Does my Parent PC need to stay turned on all day?**  
+No. The Child PC stores all screen-time schedules, app rules, and DNS settings locally in an encrypted database. Even if the Parent PC is powered off, `VylosService` enforces every rule on the Child PC and syncs activity automatically the next time both computers are online.
+
+**What Windows user account should my child use?**  
+For the strongest operating system security on Windows 10/11, configure a **Standard Windows User** account for your child and keep your **Windows Administrator** account password-protected for parents.
+
+**What if I forget my Parent Master Password?**  
+Click **Use Recovery Key** on the Vylos unlock screen and enter the Emergency Recovery Key (`FC-XXXX-XXXX-XXXX-XXXX`) generated during initial setup to set a new password.
+
+---
+
+## License & Source Code
+
+Vylos Family Control is free, open-source software released under the [MIT License](LICENSE).  
+*(Looking for technical architecture and build instructions? See [DEVELOPER.md](DEVELOPER.md)).*

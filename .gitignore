@@ -1,19 +1,67 @@
-# Binaries and build outputs
+# =============================================================================
+# Vylos Family Control — .gitignore
+# =============================================================================
+
+# Compiled Executables & Windows Installer Artifacts
 *.exe
+*.exe~
 *.dll
 *.so
 *.dylib
 *.msi
 *.wixobj
 *.wixpdb
+*.cab
+*.syso
 
-# Dependencies
-frontend/node_modules/
+# Build & Release Output Directories
+/dist/
+/build/
+/bin/
+/out/
+/frontend/dist/
+/frontend/.vite/
 
-# Local runtime databases and keys
+# Node.js Dependencies & Logs
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.npm/
+
+# Go Build, Test & Coverage Artifacts
+*.test
+*.out
+coverage.txt
+coverage.html
+go.work
+go.work.sum
+
+# Local SQLite Databases, WAL & Encrypted Keystores
 *.db
 *.db-shm
 *.db-wal
-*.dpapi
-FamilyControl.zip
-node_modules
+*.db-journal
+*.sqlite
+*.sqlite3
+/keys/
+*.key
+*.pem
+*.crt
+
+# Environment & Local Secrets
+.env
+.env.*
+!.env.example
+
+# IDE, Editor & OS Files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/

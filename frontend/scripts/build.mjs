@@ -252,7 +252,7 @@ const appBundleJS = `// Vylos Family Control Compiled Desktop UI Bundle (Svelte 
         <form id="child-setup-form" style="display:flex; flex-direction:column; gap:11px;">
           <div class="notice-box" style="margin-bottom:2px;">
             <div>
-              <strong>Parent Configuration Required (Eltern-Einrichtung erforderlich):</strong>
+              <strong>Parent Configuration Required:</strong>
               A parent must set up Child Mode on this computer. Set a local Parent Protection Password (so your child cannot disable rules or uninstall Vylos) and pair with the Parent PC.
             </div>
           </div>

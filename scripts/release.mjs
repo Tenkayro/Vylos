@@ -153,7 +153,7 @@ async function main() {
   let releaseNotes = opts.notes;
   if (!releaseNotes && !opts.yes) {
     const notesInput = await p.text({
-      message: 'Release notes (included in latest.json / latest.yml & GitHub Release):',
+      message: 'Release notes (included in latest.json & GitHub Release):',
       placeholder: `Vylos Family Control ${tag} — Vylos-Parent.msi & Vylos-Child.msi`,
       defaultValue: `Vylos Family Control ${tag} — Vylos-Parent.msi & Vylos-Child.msi`,
     });
@@ -174,7 +174,7 @@ async function main() {
       `Repository:   ${GITHUB_REPO_URL}`,
       `MSI Editions: dist/Vylos-Parent.msi (Parent Dashboard — blocked on Child PCs)`,
       `              dist/Vylos-Child.msi  (Child Agent — locked to Child Mode)`,
-      `Updater:      dist/latest.json & dist/latest.yml`,
+      `Updater:      dist/latest.json (Single manifest for Parent & Child Updater)`,
       `Mode:         ${opts.dryRun ? 'DRY RUN (local build only)' : 'Build + Publish GitHub Release'}`,
     ].join('\n'),
     'Release Plan'
@@ -269,15 +269,16 @@ async function main() {
   });
   s.stop('Created dist/Vylos-Parent.msi and dist/Vylos-Child.msi.');
 
-  // Step 5: Generate latest.json and latest.yml for the Auto-Updater
-  s.start('Generating latest.json and latest.yml updater manifests...');
+  // Step 5: Generate single latest.json for the Auto-Updater (covers both Parent & Child editions)
+  s.start('Generating latest.json updater manifest...');
+  try {
+    fs.rmSync(path.join(distDir, 'latest.yml'), { force: true });
+  } catch {}
   const pubDate = new Date().toISOString();
   const parentMsiSha256 = sha256File(parentMsiPath);
-  const parentMsiSha512 = sha512Base64File(parentMsiPath);
   const parentMsiSize = fs.statSync(parentMsiPath).size;
 
   const childMsiSha256 = sha256File(childMsiPath);
-  const childMsiSha512 = sha512Base64File(childMsiPath);
   const childMsiSize = fs.statSync(childMsiPath).size;
 
   const parentMsiUrl = `${GITHUB_REPO_URL}/releases/download/${tag}/Vylos-Parent.msi`;
@@ -294,47 +295,27 @@ async function main() {
       'windows-x86_64': {
         url: parentMsiUrl,
         sha256: parentMsiSha256,
+        size: parentMsiSize,
       },
       'windows-x86_64-parent': {
         url: parentMsiUrl,
         sha256: parentMsiSha256,
+        size: parentMsiSize,
       },
       'windows-x86_64-child': {
         url: childMsiUrl,
         sha256: childMsiSha256,
+        size: childMsiSize,
       },
     },
   };
 
   const latestJsonPath = path.join(distDir, 'latest.json');
   fs.writeFileSync(latestJsonPath, JSON.stringify(latestJson, null, 2) + '\n', 'utf8');
-
-  const latestYml = [
-    `version: ${nextVersion}`,
-    `releaseDate: '${pubDate}'`,
-    `path: Vylos-Parent.msi`,
-    `url: ${parentMsiUrl}`,
-    `sha256: ${parentMsiSha256}`,
-    `sha512: ${parentMsiSha512}`,
-    `files:`,
-    `  - url: Vylos-Parent.msi`,
-    `    sha256: ${parentMsiSha256}`,
-    `    sha512: ${parentMsiSha512}`,
-    `    size: ${parentMsiSize}`,
-    `  - url: Vylos-Child.msi`,
-    `    sha256: ${childMsiSha256}`,
-    `    sha512: ${childMsiSha512}`,
-    `    size: ${childMsiSize}`,
-    `notes: ${JSON.stringify(releaseNotes)}`,
-    '',
-  ].join('\n');
-
-  const latestYmlPath = path.join(distDir, 'latest.yml');
-  fs.writeFileSync(latestYmlPath, latestYml, 'utf8');
-  s.stop('Generated dist/latest.json and dist/latest.yml.');
+  s.stop('Generated dist/latest.json.');
 
   if (opts.dryRun) {
-    p.outro(`Dry run complete! Built Vylos-Parent.msi, Vylos-Child.msi, latest.json, and latest.yml.`);
+    p.outro(`Dry run complete! Built Vylos-Parent.msi, Vylos-Child.msi, and latest.json.`);
     return;
   }
 
@@ -372,7 +353,7 @@ async function main() {
     } catch {}
 
     const gh = findGhCli();
-    const releaseAssets = [parentMsiPath, childMsiPath, latestJsonPath, latestYmlPath];
+    const releaseAssets = [parentMsiPath, childMsiPath, latestJsonPath];
 
     let exists = false;
     try {
