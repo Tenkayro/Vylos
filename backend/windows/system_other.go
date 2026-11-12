@@ -26,7 +26,7 @@ type InstalledAppInfo struct {
 
 func IsSystemCriticalProcess(exeName string) bool {
 	cleaned := strings.ToLower(strings.TrimSpace(filepath.Base(exeName)))
-	return cleaned == "" || cleaned == "system" || cleaned == "explorer.exe" || cleaned == "svchost.exe" || cleaned == "csrss.exe" || cleaned == "lsass.exe" || cleaned == "familycontrol.exe"
+	return cleaned == "" || cleaned == "system" || cleaned == "explorer.exe" || cleaned == "svchost.exe" || cleaned == "csrss.exe" || cleaned == "lsass.exe" || cleaned == "vylos.exe" || cleaned == "familycontrol.exe"
 }
 
 func GetForegroundActivity() (ProcessInfo, error) {

@@ -1,0 +1,16 @@
+version: 1.0.0
+releaseDate: '2026-11-12T01:21:29.500Z'
+path: Vylos-Setup.msi
+url: https://github.com/Tenkayro/Vylos/releases/download/v1.0.0/Vylos-Setup.msi
+sha256: c2d32ea44b2a0a254ed88bf262cd5cd241f78dbbd7d46fe7f4dc889767e17570
+sha512: 87VLijdBY+aFUzy1A0IEKX52uvidtPOlAklm0hX1M8B/T0oVNm8LWiS8pWd92nzcoxBr34POhPoDAErU2g2MnA==
+files:
+  - url: Vylos-Setup.msi
+    sha256: c2d32ea44b2a0a254ed88bf262cd5cd241f78dbbd7d46fe7f4dc889767e17570
+    sha512: 87VLijdBY+aFUzy1A0IEKX52uvidtPOlAklm0hX1M8B/T0oVNm8LWiS8pWd92nzcoxBr34POhPoDAErU2g2MnA==
+    size: 5386240
+  - url: Vylos-windows-amd64.exe
+    sha256: 5efc7165bc0044e83fbb3bf18c5e828fccb9c3840df9da989fda69189b798181
+  - url: Vylos-windows-arm64.exe
+    sha256: 41195c00574249d69afc9fc21f6d40ac3b55ff270ac406f0571e53566bf696e9
+notes: "Vylos Family Control v1.0.0 — Unified Parent & Child Windows MSI Installer"

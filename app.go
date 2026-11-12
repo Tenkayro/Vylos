@@ -19,6 +19,7 @@ import (
 	"familycontrol/backend/protection"
 	"familycontrol/backend/screen_time"
 	"familycontrol/backend/security"
+	"familycontrol/backend/updater"
 	"familycontrol/backend/websites"
 	"familycontrol/backend/windows"
 	"familycontrol/service"
@@ -54,6 +55,7 @@ type ChildModeStatus struct {
 }
 
 type BootstrapState struct {
+	AppVersion      string                       `json:"appVersion"`
 	Config          family.Config                `json:"config"`
 	Children        []family.ChildProfile        `json:"children"`
 	Devices         []devices.Device             `json:"devices"`
@@ -99,6 +101,7 @@ type App struct {
 	apps        *applications.Manager
 	websites    *websites.Manager
 	protection  *protection.Manager
+	updater     *updater.Manager
 	coordinator *networking.Coordinator
 	discovery   *networking.DiscoveryService
 	tray        *windows.TrayManager
@@ -107,14 +110,14 @@ type App struct {
 	onOpenUI    func()
 }
 
-// NewApp initializes the FamilyControl application stack in the given data directory.
+// NewApp initializes the Vylos Family Control application stack in the given data directory.
 func NewApp(dataDir string, enforceOSLock bool) (*App, error) {
 	if dataDir == "" {
 		appData, err := os.UserConfigDir()
 		if err != nil || appData == "" {
 			appData = "."
 		}
-		dataDir = filepath.Join(appData, "FamilyControl")
+		dataDir = filepath.Join(appData, "Vylos")
 	}
 	if err := os.MkdirAll(dataDir, 0700); err != nil {
 		return nil, fmt.Errorf("create data dir: %w", err)
@@ -125,7 +128,7 @@ func NewApp(dataDir string, enforceOSLock bool) (*App, error) {
 		return nil, fmt.Errorf("init seal manager: %w", err)
 	}
 
-	store, err := database.Open(filepath.Join(dataDir, "familycontrol.db"))
+	store, err := database.Open(filepath.Join(dataDir, "vylos.db"))
 	if err != nil {
 		return nil, fmt.Errorf("open database: %w", err)
 	}
@@ -140,6 +143,7 @@ func NewApp(dataDir string, enforceOSLock bool) (*App, error) {
 	appMgr := applications.NewManager(store)
 	webMgr := websites.NewManager(store)
 	protMgr := protection.NewManager(store, webMgr)
+	updMgr := updater.NewManager("")
 
 	coord := networking.NewCoordinator(store, seal, famMgr, devMgr, monMgr, stMgr, appMgr, webMgr, protMgr)
 
@@ -155,6 +159,7 @@ func NewApp(dataDir string, enforceOSLock bool) (*App, error) {
 		apps:        appMgr,
 		websites:    webMgr,
 		protection:  protMgr,
+		updater:     updMgr,
 		coordinator: coord,
 	}
 
@@ -176,7 +181,7 @@ func NewApp(dataDir string, enforceOSLock bool) (*App, error) {
 	app.discovery = disc
 
 	tray := windows.NewTrayManager(
-		"FamilyControl — Local Parental Control",
+		"Vylos Family Control",
 		func() {
 			if app.onOpenUI != nil {
 				app.onOpenUI()
@@ -256,6 +261,7 @@ func (a *App) GetBootstrapState() (BootstrapState, error) {
 	}
 
 	return BootstrapState{
+		AppVersion:      updater.AppVersion,
 		Config:          cfg,
 		Children:        children,
 		Devices:         devs,
@@ -652,6 +658,19 @@ func (a *App) AuthorizeUninstall(parentPassword string) (bool, error) {
 	return true, nil
 }
 
+func (a *App) CheckForUpdates() (updater.UpdateCheckResult, error) {
+	return a.updater.CheckForUpdates()
+}
+
+func (a *App) InstallUpdate() (updater.UpdateCheckResult, error) {
+	res, err := a.updater.DownloadAndInstallUpdate()
+	if err == nil {
+		_ = a.protection.LogSecurityEvent("local", "info", "updater",
+			fmt.Sprintf("Started MSI update to v%s", res.LatestVersion), res.DownloadURL)
+	}
+	return res, err
+}
+
 // RegisterRPCBridge mounts the local JSON-RPC bridge handlers so the Svelte frontend works identically
 // in Wails 3 WebView2 mode and standalone desktop window mode.
 func (a *App) RegisterRPCBridge(mux *http.ServeMux) {
@@ -790,6 +809,10 @@ func (a *App) dispatchRPC(method string, args map[string]json.RawMessage) (any, 
 		return map[string]bool{"ok": true}, a.ImportEncryptedBackup(strArg("encryptedPayload"))
 	case "AuthorizeUninstall":
 		return a.AuthorizeUninstall(strArg("parentPassword"))
+	case "CheckForUpdates":
+		return a.CheckForUpdates()
+	case "InstallUpdate":
+		return a.InstallUpdate()
 	default:
 		return nil, fmt.Errorf("unknown RPC method: %s", method)
 	}

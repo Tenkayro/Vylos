@@ -25,10 +25,10 @@
 <div class="app-shell">
   <aside class="sidebar">
     <div class="brand-header">
-      <div class="brand-mark">FC</div>
+      <div class="brand-mark">V</div>
       <div>
-        <div class="brand-title">FamilyControl</div>
-        <div class="brand-subtitle">{config.familyName} · Parent</div>
+        <div class="brand-title">Vylos</div>
+        <div class="brand-subtitle">{config.familyName} · Family Control</div>
       </div>
     </div>
 

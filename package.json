@@ -1,17 +1,26 @@
 {
-  "name": "familycontrol",
+  "name": "vylos",
   "version": "1.0.0",
   "private": true,
-  "description": "FamilyControl — Complete Open-Source Local Parental Control Application",
+  "description": "Vylos Family Control — Complete Open-Source Local Parental Control Application",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Tenkayro/Vylos.git"
+  },
   "type": "module",
   "scripts": {
     "start": "node scripts/start.mjs",
     "dev": "node scripts/start.mjs --ui-port 41800",
     "build": "node scripts/build.mjs",
     "build:frontend": "node frontend/scripts/build.mjs",
-    "build:backend": "go build -ldflags=\"-s -w\" -o FamilyControl.exe .",
+    "build:backend": "go build -ldflags=\"-s -w\" -o Vylos.exe .",
+    "build:msi": "node scripts/build-msi.mjs",
+    "release": "node scripts/release.mjs",
     "test": "node scripts/test.mjs",
     "test:frontend": "node --test frontend/scripts/test.mjs",
     "test:go": "go test -v ./..."
+  },
+  "devDependencies": {
+    "@clack/prompts": "^1.0.1"
   }
 }

@@ -87,7 +87,7 @@ func (a *BackgroundAgent) Start() {
 			_, _ = a.coordinator.StartParentServer(fmt.Sprintf(":%d", cfg.ListenPort))
 		}
 		if cfg.LocalDeviceID != "" {
-			_ = a.monitoring.RecordSessionEvent(cfg.LocalDeviceID, "login", "FamilyControl agent started")
+			_ = a.monitoring.RecordSessionEvent(cfg.LocalDeviceID, "login", "Vylos Family Control agent started")
 			_, _ = a.apps.RefreshInstalledApps(cfg.LocalDeviceID)
 		}
 	}
@@ -138,9 +138,9 @@ func (a *BackgroundAgent) RunEnforcementTick() {
 		eval, err := a.screenTime.Evaluate(devID, now)
 		if err == nil {
 			if a.tray != nil {
-				statusLabel := fmt.Sprintf("FamilyControl — Protected (%dm left today)", eval.RemainingMinutes)
+				statusLabel := fmt.Sprintf("Vylos Family Control — Protected (%dm left today)", eval.RemainingMinutes)
 				if !eval.AllowedNow {
-					statusLabel = fmt.Sprintf("FamilyControl — Restricted (%s)", eval.BlockReason)
+					statusLabel = fmt.Sprintf("Vylos Family Control — Restricted (%s)", eval.BlockReason)
 				}
 				a.tray.UpdateTooltip(statusLabel)
 

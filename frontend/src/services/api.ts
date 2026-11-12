@@ -254,6 +254,7 @@ export interface ChildModeStatus {
 }
 
 export interface BootstrapState {
+  appVersion: string;
   config: FamilyConfig;
   children: ChildProfile[];
   devices: Device[];
@@ -261,6 +262,18 @@ export interface BootstrapState {
   childStatus: ChildModeStatus;
   discoveredPeers: DiscoveryBeacon[];
   localLanIps: string[];
+}
+
+export interface UpdateCheckResult {
+  currentVersion: string;
+  latestVersion: string;
+  updateAvailable: boolean;
+  downloadUrl: string;
+  sha256: string;
+  releaseNotes: string;
+  publishedAt: string;
+  checkedAt: string;
+  repository: string;
 }
 
 export interface PairingTicket {
@@ -411,4 +424,10 @@ export const api = {
 
   authorizeUninstall: (parentPassword: string) =>
     callRPC<boolean>('AuthorizeUninstall', { parentPassword }),
+
+  checkForUpdates: () =>
+    callRPC<UpdateCheckResult>('CheckForUpdates'),
+
+  installUpdate: () =>
+    callRPC<UpdateCheckResult>('InstallUpdate'),
 };

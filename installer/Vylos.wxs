@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?ifndef ProductVersion?>
+  <?define ProductVersion = "1.0.0" ?>
+<?endif?>
+<?ifndef SourceExe?>
+  <?define SourceExe = "..\Vylos.exe" ?>
+<?endif?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  <Product
+    Id="*"
+    Name="Vylos Family Control"
+    Language="1033"
+    Version="$(var.ProductVersion)"
+    Manufacturer="Tenkayro / Vylos"
+    UpgradeCode="94A8E4B5-3E1F-4B5C-8812-7E5A9104F11A">
+
+    <Package
+      InstallerVersion="500"
+      Compressed="yes"
+      InstallScope="perMachine"
+      Description="Vylos Family Control - Unified Parent and Child Local Parental Control Application"
+      Platform="x64" />
+
+    <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
+    <MediaTemplate EmbedCab="yes" />
+
+    <Feature Id="ProductFeature" Title="Vylos Family Control (Parent &amp; Child Unified Application)" Level="1">
+      <ComponentGroupRef Id="ProductComponents" />
+      <ComponentRef Id="ApplicationShortcut" />
+      <ComponentRef Id="DesktopShortcut" />
+    </Feature>
+  </Product>
+
+  <Fragment>
+    <Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="ProgramFiles64Folder">
+        <Directory Id="INSTALLFOLDER" Name="Vylos" />
+      </Directory>
+      <Directory Id="ProgramMenuFolder">
+        <Directory Id="ApplicationProgramsFolder" Name="Vylos Family Control" />
+      </Directory>
+      <Directory Id="DesktopFolder" Name="Desktop" />
+    </Directory>
+  </Fragment>
+
+  <Fragment>
+    <ComponentGroup Id="ProductComponents" Directory="INSTALLFOLDER">
+      <Component Id="MainExecutableAndService" Guid="8E41A7C3-5092-4847-A1E9-30E522B409B1" Win64="yes">
+        <File Id="VylosExe" Name="Vylos.exe" Source="$(var.SourceExe)" KeyPath="yes" />
+
+        <ServiceInstall
+          Id="VylosServiceInstaller"
+          Type="ownProcess"
+          Vital="yes"
+          Name="VylosService"
+          DisplayName="Vylos Family Control Service"
+          Description="Enforces local Vylos family rules and synchronizes with the Parent computer over LAN."
+          Start="auto"
+          Account="LocalSystem"
+          ErrorControl="normal"
+          Arguments="--service" />
+
+        <ServiceControl
+          Id="StartVylosService"
+          Start="install"
+          Stop="both"
+          Remove="uninstall"
+          Name="VylosService"
+          Wait="no" />
+      </Component>
+    </ComponentGroup>
+
+    <DirectoryRef Id="ApplicationProgramsFolder">
+      <Component Id="ApplicationShortcut" Guid="D1C92F14-7A22-4B08-9B3C-61F82301A94E">
+        <Shortcut
+          Id="ApplicationStartMenuShortcut"
+          Name="Vylos Family Control"
+          Description="Open Vylos Family Control (Parent Dashboard or Child Mode)"
+          Target="[INSTALLFOLDER]Vylos.exe"
+          WorkingDirectory="INSTALLFOLDER" />
+        <RemoveFolder Id="CleanUpShortCut" Directory="ApplicationProgramsFolder" On="uninstall" />
+        <RegistryValue Root="HKCU" Key="Software\Vylos" Name="installed" Type="integer" Value="1" KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+
+    <DirectoryRef Id="DesktopFolder">
+      <Component Id="DesktopShortcut" Guid="A7F49E21-6C15-4D88-8421-92B03418C77A">
+        <Shortcut
+          Id="ApplicationDesktopShortcut"
+          Name="Vylos Family Control"
+          Description="Open Vylos Family Control"
+          Target="[INSTALLFOLDER]Vylos.exe"
+          WorkingDirectory="INSTALLFOLDER" />
+        <RegistryValue Root="HKCU" Key="Software\Vylos" Name="desktopShortcut" Type="integer" Value="1" KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+  </Fragment>
+</Wix>

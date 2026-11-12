@@ -71,6 +71,8 @@ var criticalSystemProcesses = map[string]bool{
 	"conhost.exe":                 true,
 	"dllhost.exe":                 true,
 	"wudfhost.exe":                true,
+	"vylos.exe":                   true,
+	"vylosservice.exe":            true,
 	"familycontrol.exe":           true,
 	"familycontrolservice.exe":    true,
 }

@@ -19,9 +19,10 @@
   let generatedRecoveryCode = '';
   let issuedSessionToken = '';
 
-  // Child Setup fields
+  // Child Setup fields (Set up by a Parent on the Child's PC)
   let childDeviceName = localDeviceName || 'Child-PC';
   let childAdminPassword = '';
+  let childAdminPasswordConfirm = '';
   let parentEndpoint = '';
   let pairingCode = '';
 
@@ -49,7 +50,11 @@
 
   async function submitChildSetup() {
     if (childAdminPassword.length < 8) {
-      showToast('Local parent protection password must be at least 8 characters.', 'error');
+      showToast('Parent protection password must be at least 8 characters.', 'error');
+      return;
+    }
+    if (childAdminPassword !== childAdminPasswordConfirm) {
+      showToast('Parent passwords do not match.', 'error');
       return;
     }
     busy = true;
@@ -57,9 +62,9 @@
       await api.setupChildMode(childDeviceName, childAdminPassword, parentContact);
       if (parentEndpoint.trim() && pairingCode.trim()) {
         await api.pairWithParent(parentEndpoint.trim(), pairingCode.trim());
-        showToast('Child PC configured and paired with Parent PC!', 'success');
+        showToast('Child PC configured by Parent and paired over TLS 1.3!', 'success');
       } else {
-        showToast('Child Mode active. Enforcing local rules.', 'success');
+        showToast('Vylos Child Mode configured by Parent. Enforcing local rules.', 'success');
       }
       onCompleted();
     } catch (e: any) {
@@ -76,20 +81,20 @@
 </script>
 
 <div style="display:flex; align-items:center; justify-content:center; height:100vh; padding:20px; background:var(--bg-primary);">
-  <div class="card" style="width:100%; max-width:560px; padding:22px 24px;">
+  <div class="card" style="width:100%; max-width:580px; padding:22px 24px;">
     <div style="display:flex; align-items:center; gap:10px; margin-bottom:16px; padding-bottom:12px; border-bottom:1px solid var(--border-subtle);">
-      <div class="brand-mark">FC</div>
+      <div class="brand-mark">V</div>
       <div>
-        <div style="font-size:15px; font-weight:600;">FamilyControl Initial Setup</div>
+        <div style="font-size:15px; font-weight:600;">Vylos Family Control — Initial Setup</div>
         <div style="font-size:11.5px; color:var(--text-secondary);">
-          100% Local Home Network Parental Control · Zero Cloud · TLS 1.3
+          Unified Installer (Parent & Child Mode) · 100% Local LAN · TLS 1.3
         </div>
       </div>
     </div>
 
     {#if step === 'role'}
       <div style="margin-bottom:14px; color:var(--text-secondary); font-size:12.5px;">
-        Choose how this Windows computer will operate in your home network:
+        <strong>Parent Setup:</strong> Select how this Windows computer will operate in your household:
       </div>
 
       <div class="grid-2" style="margin-bottom:16px;">
@@ -100,10 +105,10 @@
         >
           <div class="row-between" style="margin-bottom:6px;">
             <span style="font-weight:600; color:var(--accent); font-size:13.5px;">Parent Mode</span>
-            <StatusBadge variant="success" label="Coordinator" />
+            <StatusBadge variant="success" label="Parent PC" />
           </div>
           <p style="color:var(--text-secondary); font-size:12px;">
-            Install on the parent computer. Manage children, devices, screen time, applications, DNS protection, and security over LAN.
+            Set up on the parent computer. Provides the Vylos dashboard for managing children, devices, screen time, applications, and websites over LAN.
           </p>
         </button>
 
@@ -114,17 +119,17 @@
         >
           <div class="row-between" style="margin-bottom:6px;">
             <span style="font-weight:600; color:var(--text-primary); font-size:13.5px;">Child Mode</span>
-            <StatusBadge variant="neutral" label="Agent" />
+            <StatusBadge variant="warning" label="Parent Setup Required" />
           </div>
           <p style="color:var(--text-secondary); font-size:12px;">
-            Install on your child's computer. Runs a lightweight background agent that enforces stored rules even when offline.
+            Must be set up by a parent on the child's computer. Locks settings with a Parent Password, pairs with the Parent PC, and enforces rules in the background.
           </p>
         </button>
       </div>
 
       <div class="notice-box">
         <span>
-          <strong>Privacy & Architecture Guarantee:</strong> No external servers, no accounts, no telemetry, and no covert surveillance (no keylogging or hidden screenshots).
+          <strong>Unified Vylos MSI Package:</strong> Both Parent and Child computers use this same application. No cloud server, no subscriptions, and no hidden surveillance.
         </span>
       </div>
 
@@ -160,7 +165,7 @@
         <div class="row-between" style="margin-top:8px;">
           <button class="btn" on:click={() => (step = 'role')}>Back</button>
           <button class="btn btn-primary" disabled={busy} on:click={submitParentSetup}>
-            {busy ? 'Initializing Cryptography...' : 'Initialize Parent Dashboard'}
+            {busy ? 'Initializing Cryptography...' : 'Initialize Vylos Parent Dashboard'}
           </button>
         </div>
       </div>
@@ -169,7 +174,7 @@
       <div style="display:flex; flex-direction:column; gap:12px;">
         <StatusBadge variant="warning" label="Save Your Emergency Recovery Key" />
         <p style="color:var(--text-secondary); font-size:12.5px;">
-          Because FamilyControl operates strictly offline without cloud accounts, this one-time recovery key is the only way to reset a forgotten Parent password. Write it down and store it safely:
+          Because Vylos operates strictly offline without cloud accounts, this one-time recovery key is the only way to reset a forgotten Parent password. Write it down and store it safely:
         </p>
         <div class="card mono" style="text-align:center; font-size:15px; font-weight:600; color:var(--accent); letter-spacing:0.06em; background:var(--bg-input);">
           {generatedRecoveryCode}
@@ -177,29 +182,40 @@
         <div class="row-between" style="margin-top:6px;">
           <span style="font-size:11.5px; color:var(--text-secondary);">Hashed locally with Argon2id</span>
           <button class="btn btn-primary" on:click={() => onCompleted(issuedSessionToken)}>
-            I Have Saved This Key — Open Dashboard
+            I Have Saved This Key — Open Vylos Dashboard
           </button>
         </div>
       </div>
 
     {:else if step === 'child_form'}
       <div style="display:flex; flex-direction:column; gap:11px;">
+        <div class="notice-box" style="margin-bottom:2px;">
+          <span>
+            <strong>Parent Configuration Step:</strong> A parent must complete this setup on the child's computer. Once activated, the child cannot change rules or exit Child Mode without the Parent Password.
+          </span>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label" for="c-devname">Child Computer Name</label>
+          <input id="c-devname" class="input" bind:value={childDeviceName} />
+        </div>
+
         <div class="grid-2">
           <div class="field-group">
-            <label class="field-label" for="c-devname">This Computer's Name</label>
-            <input id="c-devname" class="input" bind:value={childDeviceName} />
+            <label class="field-label" for="c-pass">Parent Protection Password (Argon2id)</label>
+            <input id="c-pass" type="password" class="input" bind:value={childAdminPassword} placeholder="Min. 8 characters" />
           </div>
           <div class="field-group">
-            <label class="field-label" for="c-pass">Local Parent Unlock Password</label>
-            <input id="c-pass" type="password" class="input" bind:value={childAdminPassword} placeholder="Min. 8 characters" />
+            <label class="field-label" for="c-pass2">Confirm Parent Password</label>
+            <input id="c-pass2" type="password" class="input" bind:value={childAdminPasswordConfirm} placeholder="Repeat password" />
           </div>
         </div>
 
         <div class="card" style="background:var(--bg-input);">
-          <div class="card-title" style="margin-bottom:6px;">Optional: Pair Now with Parent PC over LAN</div>
+          <div class="card-title" style="margin-bottom:6px;">Pair with Parent PC over LAN (Generate Code on Parent PC → Devices)</div>
           {#if discoveredPeers.filter(p => p.mode === 'parent').length > 0}
             <div style="margin-bottom:8px; font-size:11.5px; color:var(--text-secondary);">
-              Discovered Parent Endpoints on LAN:
+              Discovered Vylos Parent PC on LAN:
               {#each discoveredPeers.filter(p => p.mode === 'parent') as peer}
                 <button class="btn btn-sm" style="margin-left:6px;" on:click={() => selectDiscoveredParent(peer)}>
                   {peer.deviceName} ({peer.ipAddress}:{peer.tlsPort})
@@ -222,7 +238,7 @@
         <div class="row-between" style="margin-top:6px;">
           <button class="btn" on:click={() => (step = 'role')}>Back</button>
           <button class="btn btn-primary" disabled={busy} on:click={submitChildSetup}>
-            {busy ? 'Activating Child Agent...' : 'Activate Child Mode'}
+            {busy ? 'Activating Child Agent...' : 'Lock & Activate Child Mode'}
           </button>
         </div>
       </div>

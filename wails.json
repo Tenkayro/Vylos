@@ -1,10 +1,10 @@
 {
   "$schema": "https://wails.io/schemas/config.v3.json",
   "version": "3",
-  "name": "FamilyControl",
-  "outputfilename": "FamilyControl",
-  "description": "Complete Open-Source Local Parental Control Application",
-  "copyright": "Copyright (c) 2026 FamilyControl Contributors",
+  "name": "Vylos",
+  "outputfilename": "Vylos",
+  "description": "Vylos Family Control — Local Parental Control Application",
+  "copyright": "Copyright (c) 2026 Tenkayro / Vylos Contributors",
   "frontend": {
     "dir": "./frontend",
     "install": "npm install",
@@ -12,18 +12,18 @@
     "dev": "npm run dev"
   },
   "author": {
-    "name": "FamilyControl Open Source Project"
+    "name": "Tenkayro"
   },
   "info": {
-    "companyName": "FamilyControl",
-    "productName": "FamilyControl",
+    "companyName": "Vylos",
+    "productName": "Vylos Family Control",
     "productVersion": "1.0.0",
     "copyright": "MIT License",
-    "comments": "Local LAN Parental Control for Windows 10/11"
+    "comments": "Vylos Family Control for Windows 10/11"
   },
   "windows": {
     "webview2": "download",
     "uac": "asInvoker",
-    "serviceName": "FamilyControlService"
+    "serviceName": "VylosService"
   }
 }

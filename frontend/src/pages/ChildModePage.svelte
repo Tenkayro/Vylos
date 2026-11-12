@@ -65,10 +65,10 @@
 <div style="max-width:780px; margin:0 auto; padding:22px 18px; display:flex; flex-direction:column; gap:14px; height:100vh; overflow-y:auto;">
   <div class="card" style="display:flex; align-items:center; justify-content:space-between;">
     <div class="row-inline">
-      <div class="brand-mark">FC</div>
+      <div class="brand-mark">V</div>
       <div>
         <div style="font-size:14.5px; font-weight:600;">
-          FamilyControl · Child Mode ({childStatus.deviceName})
+          Vylos Family Control · Child Mode ({childStatus.deviceName})
         </div>
         <div style="font-size:11.5px; color:var(--text-secondary);">
           Household: {childStatus.familyName} · Transparent Parental Protection Active

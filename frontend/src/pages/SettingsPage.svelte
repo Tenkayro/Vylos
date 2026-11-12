@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { api, type FamilyConfig } from '../services/api';
+  import { api, type FamilyConfig, type UpdateCheckResult } from '../services/api';
   import { showToast } from '../stores/appStore';
   import StatusBadge from '../components/StatusBadge.svelte';
 
@@ -10,6 +10,39 @@
   let parentContact = config.parentContact;
   let retentionDays = config.retentionDays || 30;
   let listenPort = config.listenPort || 41843;
+
+  // Updater state
+  let updateInfo: UpdateCheckResult | null = null;
+  let checkingUpdate = false;
+  let installingUpdate = false;
+
+  async function handleCheckUpdates() {
+    checkingUpdate = true;
+    try {
+      updateInfo = await api.checkForUpdates();
+      if (updateInfo.updateAvailable) {
+        showToast(`New Vylos version v${updateInfo.latestVersion} available!`, 'success');
+      } else {
+        showToast(`Vylos is up to date (v${updateInfo.currentVersion}).`, 'info');
+      }
+    } catch (e: any) {
+      showToast(e.message, 'error');
+    } finally {
+      checkingUpdate = false;
+    }
+  }
+
+  async function handleInstallUpdate() {
+    installingUpdate = true;
+    try {
+      const res = await api.installUpdate();
+      showToast(`Downloaded and launched Vylos v${res.latestVersion} MSI update!`, 'success');
+    } catch (e: any) {
+      showToast(e.message, 'error');
+    } finally {
+      installingUpdate = false;
+    }
+  }
 
   // Password change
   let currentPassword = '';
@@ -235,7 +268,7 @@
     {#if uninstallAuthorized}
       <div class="card mono" style="background:var(--bg-input); font-size:11px; color:var(--success);">
         Uninstall Authorized. Run as Administrator:<br />
-        FamilyControl.exe --uninstall-service --password "&lt;YOUR_PASSWORD&gt;"
+        Vylos.exe --uninstall-service --password "&lt;YOUR_PASSWORD&gt;"
       </div>
     {:else}
       <div style="font-size:11.5px; color:var(--text-secondary);">
@@ -243,4 +276,42 @@
       </div>
     {/if}
   </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <div>
+      <div class="card-title">Vylos Automatic Updater (GitHub Release MSI)</div>
+      <div class="card-subtitle">Checks https://github.com/Tenkayro/Vylos/releases/latest/download/latest.json for signed MSI updates</div>
+    </div>
+    <div class="row-inline">
+      <button class="btn btn-sm" on:click={handleCheckUpdates} disabled={checkingUpdate}>
+        {checkingUpdate ? 'Checking...' : 'Check for Updates'}
+      </button>
+      {#if updateInfo && updateInfo.updateAvailable}
+        <button class="btn btn-sm btn-primary" on:click={handleInstallUpdate} disabled={installingUpdate}>
+          {installingUpdate ? 'Downloading MSI...' : `Update to v${updateInfo.latestVersion}`}
+        </button>
+      {/if}
+    </div>
+  </div>
+
+  {#if updateInfo}
+    <div class="row-between" style="font-size:12px;">
+      <div>
+        Current: <span class="mono">{updateInfo.currentVersion}</span> · Latest: <span class="mono">{updateInfo.latestVersion}</span>
+        {#if updateInfo.notes}
+          <div style="color:var(--text-secondary); margin-top:4px;">{updateInfo.notes}</div>
+        {/if}
+      </div>
+      <StatusBadge
+        variant={updateInfo.updateAvailable ? 'warning' : 'success'}
+        label={updateInfo.updateAvailable ? 'Update Available' : 'Up to Date'}
+      />
+    </div>
+  {:else}
+    <div style="font-size:11.5px; color:var(--text-secondary);">
+      Click "Check for Updates" to query the latest release manifest and automatically install a newer MSI build.
+    </div>
+  {/if}
 </div>

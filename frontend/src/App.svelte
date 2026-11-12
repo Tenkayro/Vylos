@@ -109,7 +109,7 @@
 
 {#if loading && !state}
   <div style="display:flex; align-items:center; justify-content:center; height:100vh; color:var(--text-secondary);">
-    Loading FamilyControl...
+    Loading Vylos Family Control...
   </div>
 {:else if state && (!state.config.setupCompleted || state.config.mode === 'unconfigured')}
   <SetupWizard
@@ -130,9 +130,9 @@
   <div style="display:flex; align-items:center; justify-content:center; height:100vh; padding:20px;">
     <div class="card" style="width:100%; max-width:420px; padding:20px 22px;">
       <div class="row-inline" style="margin-bottom:14px;">
-        <div class="brand-mark">FC</div>
+        <div class="brand-mark">V</div>
         <div>
-          <div style="font-weight:600; font-size:14px;">Parent Dashboard Locked</div>
+          <div style="font-weight:600; font-size:14px;">Vylos Parent Dashboard Locked</div>
           <div style="font-size:11.5px; color:var(--text-secondary);">{state.config.familyName} · Argon2id Protected</div>
         </div>
       </div>

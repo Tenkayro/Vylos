@@ -11,9 +11,9 @@ import (
 	"golang.org/x/sys/windows/svc"
 )
 
-const ServiceName = "FamilyControlService"
-const ServiceDisplayName = "FamilyControl Parental Control Service"
-const ServiceDescription = "Enforces local FamilyControl screen-time, application, and DNS protection rules and synchronizes with the Parent computer over LAN."
+const ServiceName = "VylosService"
+const ServiceDisplayName = "Vylos Family Control Service"
+const ServiceDescription = "Enforces local Vylos Family Control screen-time, application, and DNS protection rules and synchronizes with the Parent computer over LAN."
 
 type windowsServiceHandler struct {
 	agent *BackgroundAgent

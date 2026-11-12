@@ -1,4 +1,4 @@
-// FamilyControl Compiled Desktop UI Bundle (Svelte + TypeScript Runtime)
+// Vylos Family Control Compiled Desktop UI Bundle (Svelte + TypeScript Runtime)
 (function () {
   'use strict';
 
@@ -23,6 +23,9 @@
     activeTicket: null,
     backupText: '',
     uninstallAuthorized: false,
+    updateInfo: null,
+    checkingUpdate: false,
+    installingUpdate: false,
     childPairingOpen: false,
     childUnlockOpen: false,
     recoveryModeOpen: false,
@@ -212,7 +215,7 @@
         <div style="display:flex; flex-direction:column; gap:12px;">
           ${badgeHTML('warning', 'Save Your Emergency Recovery Key')}
           <p style="color:var(--text-secondary); font-size:12.5px;">
-            Because FamilyControl operates strictly offline without cloud accounts, this one-time recovery key is the only way to reset a forgotten Parent password. Write it down and store it safely:
+            Because Vylos operates strictly offline without cloud accounts, this one-time recovery key is the only way to reset a forgotten Parent password. Write it down and store it safely:
           </p>
           <div class="card mono" style="text-align:center; font-size:15px; font-weight:600; color:var(--accent); letter-spacing:0.06em; background:var(--bg-input);">
             ${esc(state.wizardRecoveryCode)}
@@ -226,18 +229,28 @@
     } else if (state.wizardStep === 'child_form') {
       inner = `
         <form id="child-setup-form" style="display:flex; flex-direction:column; gap:11px;">
+          <div class="notice-box" style="margin-bottom:2px;">
+            <div>
+              <strong>Parent Configuration Required (Eltern-Einrichtung erforderlich):</strong>
+              A parent must set up Child Mode on this computer. Set a local Parent Protection Password (so your child cannot disable rules or uninstall Vylos) and pair with the Parent PC.
+            </div>
+          </div>
+          <div class="field-group">
+            <label class="field-label">This Child Computer's Name</label>
+            <input class="input" name="deviceName" value="${esc(cfg.localDeviceName || 'Child-PC')}" required />
+          </div>
           <div class="grid-2">
             <div class="field-group">
-              <label class="field-label">This Computer's Name</label>
-              <input class="input" name="deviceName" value="${esc(cfg.localDeviceName || 'Child-PC')}" required />
+              <label class="field-label">Parent Protection Password (Argon2id)</label>
+              <input type="password" class="input" name="parentPassword" placeholder="Min. 8 characters (Parent only)" required />
             </div>
             <div class="field-group">
-              <label class="field-label">Local Parent Unlock Password</label>
-              <input type="password" class="input" name="parentPassword" placeholder="Min. 8 characters" required />
+              <label class="field-label">Confirm Parent Password</label>
+              <input type="password" class="input" name="parentPasswordConfirm" placeholder="Repeat parent password" required />
             </div>
           </div>
           <div class="card" style="background:var(--bg-input);">
-            <div class="card-title" style="margin-bottom:6px;">Optional: Pair Now with Parent PC over LAN</div>
+            <div class="card-title" style="margin-bottom:6px;">Pair with Parent PC over LAN (Recommended)</div>
             ${parentPeers.length > 0 ? '<div style="margin-bottom:8px; font-size:11.5px; color:var(--text-secondary);">Discovered Parent PC: ' + parentPeers.map(p => esc(p.deviceName + ' (' + p.ipAddress + ':' + p.tlsPort + ')')).join(', ') + '</div>' : ''}
             <div class="grid-2">
               <div class="field-group">
@@ -252,7 +265,7 @@
           </div>
           <div class="row-between" style="margin-top:6px;">
             <button type="button" class="btn" data-action="wizard-step" data-step="role">Back</button>
-            <button type="submit" class="btn btn-primary">Activate Child Mode</button>
+            <button type="submit" class="btn btn-primary">Authorize & Activate Child Mode</button>
           </div>
         </form>
       `;
@@ -262,10 +275,10 @@
       <div style="display:flex; align-items:center; justify-content:center; height:100vh; padding:20px; background:var(--bg-primary);">
         <div class="card" style="width:100%; max-width:560px; padding:22px 24px;">
           <div style="display:flex; align-items:center; gap:10px; margin-bottom:16px; padding-bottom:12px; border-bottom:1px solid var(--border-subtle);">
-            <div class="brand-mark">FC</div>
+            <div class="brand-mark">V</div>
             <div>
-              <div style="font-size:15px; font-weight:600;">FamilyControl Initial Setup</div>
-              <div style="font-size:11.5px; color:var(--text-secondary);">100% Local Home Network Parental Control · Zero Cloud · TLS 1.3</div>
+              <div style="font-size:15px; font-weight:600;">Vylos Family Control — Unified Setup</div>
+              <div style="font-size:11.5px; color:var(--text-secondary);">Single Unified MSI Application · Choose Parent or Child Role · Local LAN TLS 1.3</div>
             </div>
           </div>
           ${inner}
@@ -867,7 +880,7 @@
       <div class="grid-4">
         ${statCardHTML('DNS Protection', p.dnsProtected ? 'Active' : 'Disabled', 'Profile: ' + p.dnsMode, p.dnsProtected ? 'success' : 'warning')}
         ${statCardHTML('Windows Firewall', p.firewallEnabled ? 'Enabled' : 'Disabled', 'Standard/Public Profile', p.firewallEnabled ? 'success' : 'error')}
-        ${statCardHTML('Background Agent', p.agentRunning ? 'Running' : 'Stopped', 'Service: FamilyControlService', p.agentRunning ? 'success' : 'warning')}
+        ${statCardHTML('Background Agent', p.agentRunning ? 'Running' : 'Stopped', 'Service: VylosService', p.agentRunning ? 'success' : 'warning')}
         ${statCardHTML('Integrity Check', p.configurationIntact ? 'Verified' : 'Attention', formatTimestamp(p.lastIntegrityCheck), p.configurationIntact ? 'success' : 'warning')}
       </div>
 
@@ -973,14 +986,36 @@
         <div class="card">
           <div class="card-header">
             <div class="card-title">Uninstall Authorization</div>
-            ${badgeHTML('neutral', 'v1.0.0 · MIT License')}
+            ${badgeHTML('neutral', 'Vylos · MIT License')}
           </div>
           <form id="uninstall-auth-form" class="row-inline" style="margin-bottom:10px;">
             <input type="password" class="input" name="password" placeholder="Enter Parent Password to authorize uninstall" required />
             <button type="submit" class="btn btn-danger">Verify Uninstall Auth</button>
           </form>
-          ${state.uninstallAuthorized ? '<div class="card mono" style="background:var(--bg-input);font-size:11px;color:var(--success);">Uninstall Authorized. Run as Admin: FamilyControl.exe --uninstall-service --password "..."</div>' : '<div style="font-size:11.5px;color:var(--text-secondary);">Device ID: <span class="mono">' + esc(cfg.localDeviceId) + '</span></div>'}
+          ${state.uninstallAuthorized ? '<div class="card mono" style="background:var(--bg-input);font-size:11px;color:var(--success);">Uninstall Authorized. Run as Admin: Vylos.exe --uninstall-service --password "..."</div>' : '<div style="font-size:11.5px;color:var(--text-secondary);">Device ID: <span class="mono">' + esc(cfg.localDeviceId) + '</span></div>'}
         </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Vylos Automatic Updater (GitHub Release MSI)</div>
+            <div class="card-subtitle">Checks https://github.com/Tenkayro/Vylos/releases/latest/download/latest.json for verified MSI updates</div>
+          </div>
+          <div class="row-inline">
+            <button class="btn btn-sm" data-action="check-updates">${state.checkingUpdate ? 'Checking...' : 'Check for Updates'}</button>
+            ${state.updateInfo && state.updateInfo.updateAvailable ? '<button class="btn btn-sm btn-primary" data-action="install-update">' + (state.installingUpdate ? 'Downloading MSI...' : 'Update to v' + esc(state.updateInfo.latestVersion)) + '</button>' : ''}
+          </div>
+        </div>
+        ${state.updateInfo ? `
+          <div class="row-between" style="font-size:12px;">
+            <div>
+              Current: <span class="mono">${esc(state.updateInfo.currentVersion)}</span> · Latest: <span class="mono">${esc(state.updateInfo.latestVersion)}</span>
+              ${state.updateInfo.notes ? '<div style="color:var(--text-secondary);margin-top:4px;">' + esc(state.updateInfo.notes) + '</div>' : ''}
+            </div>
+            ${badgeHTML(state.updateInfo.updateAvailable ? 'warning' : 'success', state.updateInfo.updateAvailable ? 'Update Available' : 'Up to Date')}
+          </div>
+        ` : '<div style="font-size:11.5px;color:var(--text-secondary);">Click "Check for Updates" to query the latest release manifest and automatically install a newer MSI build.</div>'}
       </div>
     `;
   }
@@ -994,9 +1029,9 @@
       <div style="max-width:780px; margin:0 auto; padding:22px 18px; display:flex; flex-direction:column; gap:14px; height:100vh; overflow-y:auto;">
         <div class="card row-between">
           <div class="row-inline">
-            <div class="brand-mark">FC</div>
+            <div class="brand-mark">V</div>
             <div>
-              <div style="font-size:14.5px; font-weight:600;">FamilyControl · Child Mode (${esc(cs.deviceName)})</div>
+              <div style="font-size:14.5px; font-weight:600;">Vylos Family Control · Child Mode (${esc(cs.deviceName)})</div>
               <div style="font-size:11.5px; color:var(--text-secondary);">Household: ${esc(cs.familyName)} · Transparent Parental Protection Active</div>
             </div>
           </div>
@@ -1037,7 +1072,7 @@
     ` : '';
 
     if (state.loading && !state.bootstrap) {
-      root.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;color:var(--text-secondary);">Loading FamilyControl...</div>';
+      root.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;color:var(--text-secondary);">Loading Vylos Family Control...</div>';
       return;
     }
 
@@ -1084,10 +1119,10 @@
       <div class="app-shell">
         <aside class="sidebar">
           <div class="brand-header">
-            <div class="brand-mark">FC</div>
+            <div class="brand-mark">V</div>
             <div>
-              <div class="brand-title">FamilyControl</div>
-              <div class="brand-subtitle">${esc(cfg.familyName)} · Parent</div>
+              <div class="brand-title">Vylos</div>
+              <div class="brand-subtitle">Family Control · ${esc(cfg.familyName)}</div>
             </div>
           </div>
           <nav class="nav-list">
@@ -1239,6 +1274,34 @@
             showToast(e.message, 'info');
           }
           await refreshBootstrap();
+        } else if (action === 'check-updates') {
+          state.checkingUpdate = true;
+          render();
+          try {
+            state.updateInfo = await callRPC('CheckForUpdates');
+            if (state.updateInfo.updateAvailable) {
+              showToast('New Vylos version v' + state.updateInfo.latestVersion + ' available!', 'success');
+            } else {
+              showToast('Vylos is up to date (v' + state.updateInfo.currentVersion + ').', 'info');
+            }
+          } catch (e) {
+            showToast(e.message, 'error');
+          } finally {
+            state.checkingUpdate = false;
+            render();
+          }
+        } else if (action === 'install-update') {
+          state.installingUpdate = true;
+          render();
+          try {
+            const res = await callRPC('InstallUpdate');
+            showToast('Downloaded & launched Vylos v' + res.latestVersion + ' MSI update!', 'success');
+          } catch (e) {
+            showToast(e.message, 'error');
+          } finally {
+            state.installingUpdate = false;
+            render();
+          }
         }
       };
     });
@@ -1282,10 +1345,20 @@
       cForm.onsubmit = async (e) => {
         e.preventDefault();
         const fd = new FormData(cForm);
+        const pass = String(fd.get('parentPassword') || '');
+        const passConfirm = String(fd.get('parentPasswordConfirm') || '');
+        if (pass.length < 8) {
+          showToast('Parent password must be at least 8 characters.', 'error');
+          return;
+        }
+        if (pass !== passConfirm) {
+          showToast('Parent passwords do not match.', 'error');
+          return;
+        }
         try {
           await callRPC('SetupChildMode', {
             deviceName: fd.get('deviceName'),
-            parentPassword: fd.get('parentPassword'),
+            parentPassword: pass,
             parentContact: '',
           });
           const ep = String(fd.get('parentEndpoint') || '').trim();

@@ -20,6 +20,7 @@ import (
 	"familycontrol/backend/protection"
 	"familycontrol/backend/screen_time"
 	"familycontrol/backend/security"
+	"familycontrol/backend/updater"
 	"familycontrol/backend/websites"
 	"familycontrol/backend/windows"
 )
@@ -422,6 +423,24 @@ func TestDiscoveryBeaconNoSecrets(t *testing.T) {
 		if strings.Contains(lower, forbidden) {
 			t.Fatalf("discovery packet must not contain sensitive field %q: %s", forbidden, string(raw))
 		}
+	}
+}
+
+func TestVylosUpdaterSemver(t *testing.T) {
+	if !updater.IsNewerSemver("1.0.0", "1.0.1") {
+		t.Fatalf("expected 1.0.1 to be newer than 1.0.0")
+	}
+	if !updater.IsNewerSemver("v1.1.9", "v1.2.0") {
+		t.Fatalf("expected v1.2.0 to be newer than v1.1.9")
+	}
+	if !updater.IsNewerSemver("1.9.9", "2.0.0") {
+		t.Fatalf("expected 2.0.0 to be newer than 1.9.9")
+	}
+	if updater.IsNewerSemver("1.0.0", "1.0.0") {
+		t.Fatalf("expected 1.0.0 not to be newer than 1.0.0")
+	}
+	if updater.IsNewerSemver("1.0.2", "1.0.0") {
+		t.Fatalf("expected 1.0.0 not to be newer than 1.0.2")
 	}
 }
 

@@ -23,9 +23,9 @@ var embeddedFrontend embed.FS
 
 func main() {
 	var (
-		flagService          = flag.Bool("service", false, "Run as the background Windows Service (FamilyControlService)")
-		flagInstallService   = flag.Bool("install-service", false, "Install and start the FamilyControl Windows Service")
-		flagUninstallService = flag.Bool("uninstall-service", false, "Stop and remove the FamilyControl Windows Service (requires --password)")
+		flagService          = flag.Bool("service", false, "Run as the background Windows Service (VylosService)")
+		flagInstallService   = flag.Bool("install-service", false, "Install and start the Vylos Windows Service")
+		flagUninstallService = flag.Bool("uninstall-service", false, "Stop and remove the Vylos Windows Service (requires --password)")
 		flagPassword         = flag.String("password", "", "Parent password for protected CLI operations")
 		flagRecoverCode      = flag.String("recover", "", "Emergency parent recovery code to reset password")
 		flagNewPassword      = flag.String("new-password", "", "New parent password when using --recover")
@@ -37,7 +37,7 @@ func main() {
 
 	app, err := NewApp(*flagDataDir, true)
 	if err != nil {
-		log.Fatalf("Failed to initialize FamilyControl: %v", err)
+		log.Fatalf("Failed to initialize Vylos Family Control: %v", err)
 	}
 	defer app.Shutdown()
 
@@ -49,7 +49,7 @@ func main() {
 		if err := service.InstallWindowsService(exePath); err != nil {
 			log.Fatalf("Service installation failed: %v", err)
 		}
-		fmt.Println("FamilyControlService installed and started successfully.")
+		fmt.Println("VylosService installed and started successfully.")
 		return
 	}
 
@@ -61,7 +61,7 @@ func main() {
 		if err := service.UninstallWindowsService(); err != nil {
 			log.Fatalf("Service removal failed: %v", err)
 		}
-		fmt.Println("FamilyControlService stopped and removed successfully.")
+		fmt.Println("VylosService stopped and removed successfully.")
 		return
 	}
 
@@ -102,8 +102,8 @@ func main() {
 		log.Fatalf("Failed to bind local UI loopback endpoint: %v", err)
 	}
 	uiURL := fmt.Sprintf("http://%s", ln.Addr().String())
-	fmt.Printf("FamilyControl Desktop UI active at: %s\n", uiURL)
-	fmt.Println("Press Ctrl+C to stop FamilyControl.")
+	fmt.Printf("Vylos Family Control UI active at: %s\n", uiURL)
+	fmt.Println("Press Ctrl+C to stop Vylos.")
 
 	uiServer := &http.Server{
 		Handler:           mux,
