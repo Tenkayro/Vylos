@@ -1,0 +1,18 @@
+# Binaries and build outputs
+*.exe
+*.dll
+*.so
+*.dylib
+*.msi
+*.wixobj
+*.wixpdb
+
+# Dependencies
+frontend/node_modules/
+
+# Local runtime databases and keys
+*.db
+*.db-shm
+*.db-wal
+*.dpapi
+FamilyControl.zip

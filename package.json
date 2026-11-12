@@ -1,0 +1,17 @@
+{
+  "name": "familycontrol",
+  "version": "1.0.0",
+  "private": true,
+  "description": "FamilyControl — Complete Open-Source Local Parental Control Application",
+  "type": "module",
+  "scripts": {
+    "start": "node scripts/start.mjs",
+    "dev": "node scripts/start.mjs --ui-port 41800",
+    "build": "node scripts/build.mjs",
+    "build:frontend": "node frontend/scripts/build.mjs",
+    "build:backend": "go build -ldflags=\"-s -w\" -o FamilyControl.exe .",
+    "test": "node scripts/test.mjs",
+    "test:frontend": "node --test frontend/scripts/test.mjs",
+    "test:go": "go test -v ./..."
+  }
+}

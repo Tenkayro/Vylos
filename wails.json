@@ -1,0 +1,29 @@
+{
+  "$schema": "https://wails.io/schemas/config.v3.json",
+  "version": "3",
+  "name": "FamilyControl",
+  "outputfilename": "FamilyControl",
+  "description": "Complete Open-Source Local Parental Control Application",
+  "copyright": "Copyright (c) 2026 FamilyControl Contributors",
+  "frontend": {
+    "dir": "./frontend",
+    "install": "npm install",
+    "build": "npm run build",
+    "dev": "npm run dev"
+  },
+  "author": {
+    "name": "FamilyControl Open Source Project"
+  },
+  "info": {
+    "companyName": "FamilyControl",
+    "productName": "FamilyControl",
+    "productVersion": "1.0.0",
+    "copyright": "MIT License",
+    "comments": "Local LAN Parental Control for Windows 10/11"
+  },
+  "windows": {
+    "webview2": "download",
+    "uac": "asInvoker",
+    "serviceName": "FamilyControlService"
+  }
+}
