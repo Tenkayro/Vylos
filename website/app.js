@@ -2,7 +2,7 @@
   'use strict';
 
   const REPO = 'Tenkayro/Vylos';
-  const FALLBACK_VERSION = '1.1.0';
+  const FALLBACK_VERSION = '1.1.1';
 
   const editions = {
     parent: {
