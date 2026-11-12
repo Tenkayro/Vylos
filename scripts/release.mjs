@@ -58,13 +58,11 @@ function sha512Base64File(filePath) {
 }
 
 function updateVersionFiles(newVersion) {
-  // 1. Root package.json
   const rootPkgPath = path.join(rootDir, 'package.json');
   const rootPkg = JSON.parse(fs.readFileSync(rootPkgPath, 'utf8'));
   rootPkg.version = newVersion;
   fs.writeFileSync(rootPkgPath, JSON.stringify(rootPkg, null, 2) + '\n', 'utf8');
 
-  // 2. Frontend package.json
   const fePkgPath = path.join(rootDir, 'frontend', 'package.json');
   if (fs.existsSync(fePkgPath)) {
     const fePkg = JSON.parse(fs.readFileSync(fePkgPath, 'utf8'));
@@ -72,7 +70,6 @@ function updateVersionFiles(newVersion) {
     fs.writeFileSync(fePkgPath, JSON.stringify(fePkg, null, 2) + '\n', 'utf8');
   }
 
-  // 3. wails.json
   const wailsPath = path.join(rootDir, 'wails.json');
   if (fs.existsSync(wailsPath)) {
     const wailsCfg = JSON.parse(fs.readFileSync(wailsPath, 'utf8'));
@@ -80,7 +77,6 @@ function updateVersionFiles(newVersion) {
     fs.writeFileSync(wailsPath, JSON.stringify(wailsCfg, null, 2) + '\n', 'utf8');
   }
 
-  // 4. installer/Vylos.wxs default ProductVersion
   const wxsPath = path.join(rootDir, 'installer', 'Vylos.wxs');
   if (fs.existsSync(wxsPath)) {
     let wxs = fs.readFileSync(wxsPath, 'utf8');
@@ -105,7 +101,7 @@ function findGhCli() {
 
 async function main() {
   const opts = parseArgs(process.argv.slice(2));
-  p.intro('Vylos Family Control — Release & MSI Builder');
+  p.intro('Vylos Family Control — Release & Dual MSI Builder (Parent + Child)');
 
   const rootPkg = JSON.parse(fs.readFileSync(path.join(rootDir, 'package.json'), 'utf8'));
   const currentVersion = (rootPkg.version || '1.0.0').replace(/^v/, '');
@@ -158,8 +154,8 @@ async function main() {
   if (!releaseNotes && !opts.yes) {
     const notesInput = await p.text({
       message: 'Release notes (included in latest.json / latest.yml & GitHub Release):',
-      placeholder: `Vylos Family Control ${tag} — Unified Parent & Child Windows MSI Installer`,
-      defaultValue: `Vylos Family Control ${tag} — Unified Parent & Child Windows MSI Installer`,
+      placeholder: `Vylos Family Control ${tag} — Vylos-Parent.msi & Vylos-Child.msi`,
+      defaultValue: `Vylos Family Control ${tag} — Vylos-Parent.msi & Vylos-Child.msi`,
     });
     if (p.isCancel(notesInput)) {
       p.cancel('Release cancelled.');
@@ -168,7 +164,7 @@ async function main() {
     releaseNotes = String(notesInput).trim();
   }
   if (!releaseNotes) {
-    releaseNotes = `Vylos Family Control ${tag} — Unified Parent & Child Windows MSI Installer`;
+    releaseNotes = `Vylos Family Control ${tag} — Vylos-Parent.msi & Vylos-Child.msi`;
   }
 
   p.note(
@@ -176,9 +172,9 @@ async function main() {
       `Brand:        Vylos Family Control`,
       `Version:      v${currentVersion} -> ${tag}`,
       `Repository:   ${GITHUB_REPO_URL}`,
-      `Deliverables: dist/Vylos-Setup.msi (Unified Parent/Child MSI)`,
-      `              dist/Vylos-windows-amd64.exe & dist/Vylos-windows-arm64.exe`,
-      `              dist/latest.json & dist/latest.yml (Auto-Updater Manifests)`,
+      `MSI Editions: dist/Vylos-Parent.msi (Parent Dashboard — blocked on Child PCs)`,
+      `              dist/Vylos-Child.msi  (Child Agent — locked to Child Mode)`,
+      `Updater:      dist/latest.json & dist/latest.yml`,
       `Mode:         ${opts.dryRun ? 'DRY RUN (local build only)' : 'Build + Publish GitHub Release'}`,
     ].join('\n'),
     'Release Plan'
@@ -210,71 +206,102 @@ async function main() {
   });
   s.stop('Built frontend assets.');
 
-  // Step 3: Build both Windows architectures (amd64 & arm64) + root Vylos.exe
+  // Step 3: Build Parent & Child editions from the single codebase
   const distDir = path.join(rootDir, 'dist');
   fs.mkdirSync(distDir, { recursive: true });
+  try {
+    fs.rmSync(path.join(distDir, 'Vylos-Setup.msi'), { force: true });
+    fs.rmSync(path.join(distDir, 'Vylos-windows-amd64.exe'), { force: true });
+    fs.rmSync(path.join(distDir, 'Vylos-windows-arm64.exe'), { force: true });
+  } catch {}
 
-  const amd64Exe = path.join(distDir, 'Vylos-windows-amd64.exe');
-  const arm64Exe = path.join(distDir, 'Vylos-windows-arm64.exe');
-  const rootExe = path.join(rootDir, 'Vylos.exe');
-  const ldflags = `-s -w -X familycontrol/backend/updater.AppVersion=${nextVersion}`;
+  const parentExe = path.join(distDir, 'Vylos-Parent.exe');
+  const childExe = path.join(distDir, 'Vylos-Child.exe');
 
-  s.start('Compiling Vylos binaries (windows/amd64 & windows/arm64)...');
-  execFileSync('go', ['build', `-ldflags=${ldflags}`, '-o', amd64Exe, '.'], {
-    cwd: rootDir,
-    env: { ...process.env, GOOS: 'windows', GOARCH: 'amd64' },
-    stdio: 'pipe',
-  });
-  execFileSync('go', ['build', `-ldflags=${ldflags}`, '-o', arm64Exe, '.'], {
-    cwd: rootDir,
-    env: { ...process.env, GOOS: 'windows', GOARCH: 'arm64' },
-    stdio: 'pipe',
-  });
-  fs.copyFileSync(amd64Exe, rootExe);
-  s.stop('Compiled Vylos-windows-amd64.exe, Vylos-windows-arm64.exe, and Vylos.exe.');
+  s.start('Compiling Vylos-Parent.exe & Vylos-Child.exe...');
+  execFileSync(
+    'go',
+    [
+      'build',
+      `-ldflags=-s -w -X familycontrol/backend/updater.AppVersion=${nextVersion} -X familycontrol/backend/family.BuildEdition=parent`,
+      '-o',
+      parentExe,
+      '.',
+    ],
+    {
+      cwd: rootDir,
+      env: { ...process.env, GOOS: 'windows', GOARCH: 'amd64' },
+      stdio: 'pipe',
+    }
+  );
+  execFileSync(
+    'go',
+    [
+      'build',
+      `-ldflags=-s -w -X familycontrol/backend/updater.AppVersion=${nextVersion} -X familycontrol/backend/family.BuildEdition=child`,
+      '-o',
+      childExe,
+      '.',
+    ],
+    {
+      cwd: rootDir,
+      env: { ...process.env, GOOS: 'windows', GOARCH: 'amd64' },
+      stdio: 'pipe',
+    }
+  );
+  s.stop('Compiled Vylos-Parent.exe and Vylos-Child.exe.');
 
-  // Step 4: Build Unified MSI Installer (dist/Vylos-Setup.msi)
-  s.start('Building unified MSI installer (dist/Vylos-Setup.msi)...');
-  const msiPath = path.join(distDir, 'Vylos-Setup.msi');
+  // Step 4: Build both MSI Installers (dist/Vylos-Parent.msi & dist/Vylos-Child.msi)
+  s.start('Building dist/Vylos-Parent.msi and dist/Vylos-Child.msi...');
+  const parentMsiPath = path.join(distDir, 'Vylos-Parent.msi');
+  const childMsiPath = path.join(distDir, 'Vylos-Child.msi');
   buildMsi({
     version: nextVersion,
-    sourceExePath: amd64Exe,
-    outputMsiPath: msiPath,
+    edition: 'parent',
+    sourceExePath: parentExe,
+    outputMsiPath: parentMsiPath,
   });
-  s.stop('Created unified MSI installer: dist/Vylos-Setup.msi');
+  buildMsi({
+    version: nextVersion,
+    edition: 'child',
+    sourceExePath: childExe,
+    outputMsiPath: childMsiPath,
+  });
+  s.stop('Created dist/Vylos-Parent.msi and dist/Vylos-Child.msi.');
 
   // Step 5: Generate latest.json and latest.yml for the Auto-Updater
   s.start('Generating latest.json and latest.yml updater manifests...');
   const pubDate = new Date().toISOString();
-  const msiSha256 = sha256File(msiPath);
-  const msiSha512 = sha512Base64File(msiPath);
-  const msiSize = fs.statSync(msiPath).size;
-  const amd64Sha256 = sha256File(amd64Exe);
-  const arm64Sha256 = sha256File(arm64Exe);
+  const parentMsiSha256 = sha256File(parentMsiPath);
+  const parentMsiSha512 = sha512Base64File(parentMsiPath);
+  const parentMsiSize = fs.statSync(parentMsiPath).size;
 
-  const msiDownloadUrl = `${GITHUB_REPO_URL}/releases/download/${tag}/Vylos-Setup.msi`;
-  const amd64DownloadUrl = `${GITHUB_REPO_URL}/releases/download/${tag}/Vylos-windows-amd64.exe`;
-  const arm64DownloadUrl = `${GITHUB_REPO_URL}/releases/download/${tag}/Vylos-windows-arm64.exe`;
+  const childMsiSha256 = sha256File(childMsiPath);
+  const childMsiSha512 = sha512Base64File(childMsiPath);
+  const childMsiSize = fs.statSync(childMsiPath).size;
+
+  const parentMsiUrl = `${GITHUB_REPO_URL}/releases/download/${tag}/Vylos-Parent.msi`;
+  const childMsiUrl = `${GITHUB_REPO_URL}/releases/download/${tag}/Vylos-Child.msi`;
 
   const latestJson = {
     version: nextVersion,
     tag,
     notes: releaseNotes,
     pub_date: pubDate,
-    url: msiDownloadUrl,
-    sha256: msiSha256,
+    url: parentMsiUrl,
+    sha256: parentMsiSha256,
     platforms: {
       'windows-x86_64': {
-        url: msiDownloadUrl,
-        exe_url: amd64DownloadUrl,
-        sha256: msiSha256,
-        exe_sha256: amd64Sha256,
+        url: parentMsiUrl,
+        sha256: parentMsiSha256,
       },
-      'windows-aarch64': {
-        url: msiDownloadUrl,
-        exe_url: arm64DownloadUrl,
-        sha256: msiSha256,
-        exe_sha256: arm64Sha256,
+      'windows-x86_64-parent': {
+        url: parentMsiUrl,
+        sha256: parentMsiSha256,
+      },
+      'windows-x86_64-child': {
+        url: childMsiUrl,
+        sha256: childMsiSha256,
       },
     },
   };
@@ -285,19 +312,19 @@ async function main() {
   const latestYml = [
     `version: ${nextVersion}`,
     `releaseDate: '${pubDate}'`,
-    `path: Vylos-Setup.msi`,
-    `url: ${msiDownloadUrl}`,
-    `sha256: ${msiSha256}`,
-    `sha512: ${msiSha512}`,
+    `path: Vylos-Parent.msi`,
+    `url: ${parentMsiUrl}`,
+    `sha256: ${parentMsiSha256}`,
+    `sha512: ${parentMsiSha512}`,
     `files:`,
-    `  - url: Vylos-Setup.msi`,
-    `    sha256: ${msiSha256}`,
-    `    sha512: ${msiSha512}`,
-    `    size: ${msiSize}`,
-    `  - url: Vylos-windows-amd64.exe`,
-    `    sha256: ${amd64Sha256}`,
-    `  - url: Vylos-windows-arm64.exe`,
-    `    sha256: ${arm64Sha256}`,
+    `  - url: Vylos-Parent.msi`,
+    `    sha256: ${parentMsiSha256}`,
+    `    sha512: ${parentMsiSha512}`,
+    `    size: ${parentMsiSize}`,
+    `  - url: Vylos-Child.msi`,
+    `    sha256: ${childMsiSha256}`,
+    `    sha512: ${childMsiSha512}`,
+    `    size: ${childMsiSize}`,
     `notes: ${JSON.stringify(releaseNotes)}`,
     '',
   ].join('\n');
@@ -307,14 +334,13 @@ async function main() {
   s.stop('Generated dist/latest.json and dist/latest.yml.');
 
   if (opts.dryRun) {
-    p.outro(`Dry run complete! Built ${msiPath}, ${latestJsonPath}, and ${latestYmlPath}.`);
+    p.outro(`Dry run complete! Built Vylos-Parent.msi, Vylos-Child.msi, latest.json, and latest.yml.`);
     return;
   }
 
   // Step 6: Git commit, tag & GitHub Release upload
   s.start(`Publishing ${tag} to GitHub (${GITHUB_REPO})...`);
   try {
-    // Ensure git repo is initialized and remote is configured
     try {
       execFileSync('git', ['rev-parse', '--is-inside-work-tree'], { cwd: rootDir, stdio: 'pipe' });
     } catch {
@@ -326,9 +352,7 @@ async function main() {
       if (!remotes.split(/\r?\n/).includes('origin')) {
         execFileSync('git', ['remote', 'add', 'origin', `${GITHUB_REPO_URL}.git`], { cwd: rootDir, stdio: 'pipe' });
       }
-    } catch {
-      // ignore remote check error
-    }
+    } catch {}
 
     execFileSync('git', ['add', 'package.json', 'frontend/package.json', 'wails.json', 'installer/Vylos.wxs'], {
       cwd: rootDir,
@@ -337,26 +361,19 @@ async function main() {
 
     try {
       execFileSync('git', ['commit', '-m', `chore(release): ${tag}`], { cwd: rootDir, stdio: 'pipe' });
-    } catch {
-      // Nothing to commit if version was kept
-    }
+    } catch {}
 
     try {
       execFileSync('git', ['tag', '-f', tag], { cwd: rootDir, stdio: 'pipe' });
-    } catch {
-      // ignore tag error
-    }
+    } catch {}
 
     try {
       execFileSync('git', ['push', 'origin', 'HEAD', '--tags', '--force'], { cwd: rootDir, stdio: 'pipe' });
-    } catch {
-      // Continue to gh release create even if git push needs upstream branch
-    }
+    } catch {}
 
     const gh = findGhCli();
-    const releaseAssets = [msiPath, latestJsonPath, latestYmlPath, amd64Exe, arm64Exe];
+    const releaseAssets = [parentMsiPath, childMsiPath, latestJsonPath, latestYmlPath];
 
-    // Check if release already exists
     let exists = false;
     try {
       execFileSync(gh, ['release', 'view', tag, '--repo', GITHUB_REPO], { cwd: rootDir, stdio: 'pipe' });
@@ -392,12 +409,12 @@ async function main() {
     }
     s.stop(`Published ${tag} to ${GITHUB_REPO_URL}/releases/tag/${tag}`);
   } catch (err) {
-    s.stop(`Local MSI & manifests built; GitHub upload encountered an error: ${err.message}`);
+    s.stop(`Local MSIs & manifests built; GitHub upload encountered an error: ${err.message}`);
     process.exitCode = 1;
     return;
   }
 
-  p.outro(`Successfully built and released Vylos Family Control ${tag}!`);
+  p.outro(`Successfully built and released Vylos Family Control ${tag} (Vylos-Parent.msi & Vylos-Child.msi)!`);
 }
 
 main().catch((err) => {

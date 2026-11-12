@@ -159,7 +159,12 @@ const appBundleJS = `// Vylos Family Control Compiled Desktop UI Bundle (Svelte 
   }
 
   function renderSetupWizard() {
-    const cfg = state.bootstrap ? state.bootstrap.config : { localDeviceName: 'Windows-PC' };
+    const cfg = state.bootstrap ? state.bootstrap.config : { localDeviceName: 'Windows-PC', buildEdition: 'unified' };
+    const edition = cfg.buildEdition || 'unified';
+    if (state.wizardStep === 'role') {
+      if (edition === 'parent') state.wizardStep = 'parent_form';
+      else if (edition === 'child') state.wizardStep = 'child_form';
+    }
     const peers = (state.bootstrap && state.bootstrap.discoveredPeers) || [];
     const parentPeers = peers.filter(p => p.mode === 'parent');
 
@@ -221,7 +226,7 @@ const appBundleJS = `// Vylos Family Control Compiled Desktop UI Bundle (Svelte 
             </div>
           </div>
           <div class="row-between" style="margin-top:8px;">
-            <button type="button" class="btn" data-action="wizard-step" data-step="role">Back</button>
+            \${edition === 'unified' ? '<button type="button" class="btn" data-action="wizard-step" data-step="role">Back</button>' : '<span style="font-size:11.5px;color:var(--text-secondary);">Vylos Parent Edition (Vylos-Parent.msi)</span>'}
             <button type="submit" class="btn btn-primary">Initialize Parent Dashboard</button>
           </div>
         </form>
@@ -280,7 +285,7 @@ const appBundleJS = `// Vylos Family Control Compiled Desktop UI Bundle (Svelte 
             </div>
           </div>
           <div class="row-between" style="margin-top:6px;">
-            <button type="button" class="btn" data-action="wizard-step" data-step="role">Back</button>
+            \${edition === 'unified' ? '<button type="button" class="btn" data-action="wizard-step" data-step="role">Back</button>' : '<span style="font-size:11.5px;color:var(--text-secondary);">Vylos Child Edition (Vylos-Child.msi) · Locked to Child Mode</span>'}
             <button type="submit" class="btn btn-primary">Authorize & Activate Child Mode</button>
           </div>
         </form>

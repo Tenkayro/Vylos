@@ -15,6 +15,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"familycontrol/backend/family"
 )
 
 const (
@@ -116,7 +118,21 @@ func (m *Manager) CheckForUpdates() (UpdateCheckResult, error) {
 	res.DownloadURL = manifest.URL
 	res.SHA256 = manifest.SHA256
 
-	if asset, ok := manifest.Platforms["windows-x86_64"]; ok {
+	editionKey := "windows-x86_64"
+	if family.BuildEdition == "parent" {
+		editionKey = "windows-x86_64-parent"
+	} else if family.BuildEdition == "child" {
+		editionKey = "windows-x86_64-child"
+	}
+
+	if asset, ok := manifest.Platforms[editionKey]; ok {
+		if asset.URL != "" {
+			res.DownloadURL = asset.URL
+		}
+		if asset.SHA256 != "" {
+			res.SHA256 = asset.SHA256
+		}
+	} else if asset, ok := manifest.Platforms["windows-x86_64"]; ok {
 		if asset.URL != "" {
 			res.DownloadURL = asset.URL
 		}

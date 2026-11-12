@@ -5,10 +5,19 @@
 <?ifndef SourceExe?>
   <?define SourceExe = "..\Vylos.exe" ?>
 <?endif?>
+<?ifndef Edition?>
+  <?define Edition = "unified" ?>
+<?endif?>
+<?ifndef ProductTitle?>
+  <?define ProductTitle = "Vylos Family Control" ?>
+<?endif?>
+<?ifndef ExeName?>
+  <?define ExeName = "Vylos.exe" ?>
+<?endif?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
   <Product
     Id="*"
-    Name="Vylos Family Control"
+    Name="$(var.ProductTitle)"
     Language="1033"
     Version="$(var.ProductVersion)"
     Manufacturer="Tenkayro / Vylos"
@@ -17,14 +26,33 @@
     <Package
       InstallerVersion="500"
       Compressed="yes"
+      InstallPrivileges="elevated"
       InstallScope="perMachine"
-      Description="Vylos Family Control - Unified Parent and Child Local Parental Control Application"
+      Description="$(var.ProductTitle) - Local Parental Control Application"
       Platform="x64" />
 
     <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
     <MediaTemplate EmbedCab="yes" />
 
-    <Feature Id="ProductFeature" Title="Vylos Family Control (Parent &amp; Child Unified Application)" Level="1">
+    <!-- Read existing Vylos edition from HKLM\Software\Vylos -->
+    <Property Id="EXISTING_VYLOS_EDITION">
+      <RegistrySearch
+        Id="FindExistingVylosEdition"
+        Root="HKLM"
+        Key="Software\Vylos"
+        Name="Edition"
+        Type="raw"
+        Win64="yes" />
+    </Property>
+
+    <?if $(var.Edition) = "parent" ?>
+    <!-- Block installing Vylos-Parent.msi on a computer that already has Vylos-Child.msi installed -->
+    <Condition Message="Security Block: Vylos Child Mode is active on this computer. Installing Vylos Parent Edition on a protected Child PC is blocked.">
+      Installed OR NOT (EXISTING_VYLOS_EDITION = "child")
+    </Condition>
+    <?endif?>
+
+    <Feature Id="ProductFeature" Title="$(var.ProductTitle)" Level="1">
       <ComponentGroupRef Id="ProductComponents" />
       <ComponentRef Id="ApplicationShortcut" />
       <ComponentRef Id="DesktopShortcut" />
@@ -46,7 +74,9 @@
   <Fragment>
     <ComponentGroup Id="ProductComponents" Directory="INSTALLFOLDER">
       <Component Id="MainExecutableAndService" Guid="8E41A7C3-5092-4847-A1E9-30E522B409B1" Win64="yes">
-        <File Id="VylosExe" Name="Vylos.exe" Source="$(var.SourceExe)" KeyPath="yes" />
+        <File Id="VylosExe" Name="$(var.ExeName)" Source="$(var.SourceExe)" KeyPath="yes" />
+
+        <RegistryValue Root="HKLM" Key="Software\Vylos" Name="Edition" Type="string" Value="$(var.Edition)" />
 
         <ServiceInstall
           Id="VylosServiceInstaller"
@@ -74,9 +104,9 @@
       <Component Id="ApplicationShortcut" Guid="D1C92F14-7A22-4B08-9B3C-61F82301A94E">
         <Shortcut
           Id="ApplicationStartMenuShortcut"
-          Name="Vylos Family Control"
-          Description="Open Vylos Family Control (Parent Dashboard or Child Mode)"
-          Target="[INSTALLFOLDER]Vylos.exe"
+          Name="$(var.ProductTitle)"
+          Description="Open $(var.ProductTitle)"
+          Target="[INSTALLFOLDER]$(var.ExeName)"
           WorkingDirectory="INSTALLFOLDER" />
         <RemoveFolder Id="CleanUpShortCut" Directory="ApplicationProgramsFolder" On="uninstall" />
         <RegistryValue Root="HKCU" Key="Software\Vylos" Name="installed" Type="integer" Value="1" KeyPath="yes" />
@@ -87,9 +117,9 @@
       <Component Id="DesktopShortcut" Guid="A7F49E21-6C15-4D88-8421-92B03418C77A">
         <Shortcut
           Id="ApplicationDesktopShortcut"
-          Name="Vylos Family Control"
-          Description="Open Vylos Family Control"
-          Target="[INSTALLFOLDER]Vylos.exe"
+          Name="$(var.ProductTitle)"
+          Description="Open $(var.ProductTitle)"
+          Target="[INSTALLFOLDER]$(var.ExeName)"
           WorkingDirectory="INSTALLFOLDER" />
         <RegistryValue Root="HKCU" Key="Software\Vylos" Name="desktopShortcut" Type="integer" Value="1" KeyPath="yes" />
       </Component>

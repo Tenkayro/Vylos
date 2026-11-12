@@ -23,8 +23,13 @@ const (
 	ModeChild        OperatingMode = "child"
 )
 
+// BuildEdition defines the compiled installer edition ("unified", "parent", or "child").
+// Overridden via -ldflags "-X familycontrol/backend/family.BuildEdition=parent|child".
+var BuildEdition = "unified"
+
 type Config struct {
 	Mode                  OperatingMode `json:"mode"`
+	BuildEdition          string        `json:"buildEdition"`
 	FamilyName            string        `json:"familyName"`
 	ParentContact         string        `json:"parentContact"`
 	LocalDeviceID         string        `json:"localDeviceId"`
@@ -94,6 +99,7 @@ func (m *Manager) GetConfig() (Config, error) {
 		return cfg, err
 	}
 	cfg.Mode = OperatingMode(modeStr)
+	cfg.BuildEdition = BuildEdition
 	cfg.SetupCompleted = setupInt == 1
 	cfg.UpdatedAt = updated.Format(time.RFC3339)
 
@@ -199,6 +205,12 @@ func (m *Manager) GetLocalEd25519PrivateKey() (ed25519.PrivateKey, string, error
 
 // InitializeParentMode configures this computer as the Parent coordination endpoint.
 func (m *Manager) InitializeParentMode(familyName, password, parentContact, firstChildName string) (SetupParentResult, error) {
+	if BuildEdition == "child" {
+		return SetupParentResult{}, errors.New("security block: this installer is Vylos Child Edition — Parent Mode cannot be activated on a Child Edition installation")
+	}
+	if existingCfg, err := m.GetConfig(); err == nil && existingCfg.SetupCompleted && existingCfg.Mode == ModeChild {
+		return SetupParentResult{}, errors.New("security block: Vylos Child Mode is already active on this computer — Parent Edition cannot overwrite a protected Child PC")
+	}
 	familyName = strings.TrimSpace(familyName)
 	if familyName == "" {
 		familyName = "Family Household"
@@ -271,6 +283,9 @@ func (m *Manager) InitializeParentMode(familyName, password, parentContact, firs
 
 // InitializeChildMode configures this computer to operate in Child Mode.
 func (m *Manager) InitializeChildMode(deviceName, parentPassword, parentContact string) (Config, error) {
+	if BuildEdition == "parent" {
+		return Config{}, errors.New("this installation is Vylos Parent Edition — use Vylos-Child.msi on the child computer")
+	}
 	deviceName = strings.TrimSpace(deviceName)
 	if deviceName == "" {
 		if h, err := os.Hostname(); err == nil && h != "" {
@@ -308,6 +323,11 @@ func (m *Manager) InitializeChildMode(deviceName, parentPassword, parentContact 
 		// Ensure local screen-time and website policies exist for offline operation
 		_, _ = tx.Exec(`INSERT OR IGNORE INTO screen_time_policies (device_id) VALUES (?)`, devID)
 		_, _ = tx.Exec(`INSERT OR IGNORE INTO website_policies (device_id) VALUES (?)`, devID)
+		// Block Vylos-Parent.exe from running on a Child Mode computer
+		_, _ = tx.Exec(`
+			INSERT OR IGNORE INTO app_rules (id, device_id, executable_name, display_name, status, daily_limit_minutes, allowed_hours)
+			VALUES (?, ?, 'vylos-parent.exe', 'Vylos Parent Installer / Dashboard (Blocked on Child PC)', 'blocked', 0, '')
+		`, "rule-block-parent-"+devID, devID)
 		return nil
 	})
 	if err != nil {
@@ -491,6 +511,12 @@ func (m *Manager) RemoveChild(childID string) error {
 func (m *Manager) SwitchOperatingMode(targetMode OperatingMode) (Config, error) {
 	if targetMode != ModeParent && targetMode != ModeChild {
 		return Config{}, errors.New("invalid operating mode")
+	}
+	if BuildEdition == "child" && targetMode == ModeParent {
+		return Config{}, errors.New("security block: Vylos Child Edition is locked to Child Mode")
+	}
+	if BuildEdition == "parent" && targetMode == ModeChild {
+		return Config{}, errors.New("Vylos Parent Edition is locked to Parent Mode")
 	}
 	if err := m.EnsureCryptographicIdentity(""); err != nil {
 		return Config{}, err
